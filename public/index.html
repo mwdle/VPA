@@ -1,0 +1,51 @@
+<!-- Canvas HTML ADAPTED FROM https://codepen.io/dcode-software/pen/yLvWNpx -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>srcc</title>
+    <link rel="stylesheet" href="styles.css" type="text/css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">  
+</head>
+<body>
+    <div class="grid-container">
+        <div class="grid-item title">
+            <div class="titleHeader">srcc - Stateful Realtime Collaborative Canvas</div>
+            <a class="githubLink" href="https://github.com/mwdle/srcc" target="_blank">https://github.com/mwdle/srcc</a>
+        </div>
+        <div class="grid-item canvas">
+            <div id="guide"></div>
+            <canvas id="canvas"></canvas>
+        </div>
+        <div class="grid-item canvasControls">
+            <div class="eraserControls">
+                <label id="toggleEraserLabel" for="eraserToggleCheckbox">Eraser Toggle:</label>
+                <input type="checkbox" id="eraserToggleCheckbox">
+            </div>
+            <div class="brushControls">
+                <label for="brush-select">Brush Size:</label>
+                <select id="brush-select">
+                    <option value="1">1x</option>
+                    <option value="2">2x</option>
+                    <option value="4">4x</option>
+                    <option value="8">8x</option>
+                    <option value="16">16x</option>
+                </select>
+            </div>
+            <div class="clearControls">
+                <button type="button" id="clearButton">Clear Canvas</button>
+            </div>
+        </div>
+        <div class="grid-item loadControls">
+            <button for="imageUpload" id="imageUploadButton">Upload an image</button>
+            <input type="file" id="imageUpload" accept="image/*">
+            <button type="button" id="downloadButton">Download image</button>
+        </div>
+        <div class="grid-item canvasControlButtons">
+            <button type="button" id="newCanvasButton">Add new canvas to rotation</button>
+            <button type="button" id="nextCanvasButton">Load next canvas from rotation</button>
+            <button type="button" id="deleteCanvasButton">Delete canvas from rotation</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

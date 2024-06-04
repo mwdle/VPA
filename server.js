@@ -1,14 +1,34 @@
-const WebSocketServer = require('ws');
-const fs = require('fs');
-const wss = new WebSocketServer.Server({ port: 8080 })
+const { WebSocketServer } = require('ws');
+const { writeFile, readdir, access, constants, readFile, unlink, rename } = require('fs');
 
 const CANVAS_WIDTH = 128;
 const CANVAS_HEIGHT = 64;
 
 const bytesPerImage = (CANVAS_WIDTH * CANVAS_HEIGHT) / 8;
  
-const currentCanvas = new Uint8Array(bytesPerImage);
-const currentCanvasNum = 0;
+let currentCanvas = new Uint8Array(bytesPerImage);
+let currentCanvasNum = 0;
+
+const express = require('express')
+const app = express()
+const port = 80
+app.use(express.static('public'))
+
+const server = app.listen(port, () => {
+  console.log(`srcc server listening on port ${app}`)
+})
+
+const wss = new WebSocketServer({server, path: '/ws'});
+
+wss.on('connection', (ws) => {
+    ws.send(currentCanvas.buffer);
+});
+
+wss.on('message', (message) => {
+    sendMessageToAllClients(message);
+    if (typeof message.data === "string") handleCommand(message);
+    else if (message.data instanceof ArrayBuffer) currentCanvas = new Uint8Array(message.data);
+});
 
 function sendMessageToAllClients(message) {
     wss.clients.forEach((client) => {
@@ -37,29 +57,19 @@ function handleCommand(message) {
     }
 }
 
-wss.on('connection', (ws) => {
-    ws.send(currentCanvas.buffer);
-});
-
-wss.on('message', (message) => {
-    sendMessageToAllClients(message);
-    if (typeof message.data === "string") handleCommand(message);
-    else if (message.data instanceof ArrayBuffer) currentCanvas = new Uint8Array(message.data);
-});
-
 function saveCanvasToFile() {
-    const filepath = "/ssrc/images/" + currentCanvasNum + ".dat";
-    fs.writeFile(filepath, currentCanvas.buffer, (err) => {
-        if (err) console.Error("Error saving current canvas to file: " + filepath);
+    const filepath = "/srcc/images/" + currentCanvasNum + ".dat";
+    writeFile(filepath, currentCanvas, (err) => {
+        if (err) console.error("Error saving current canvas to file: " + filepath);
         else console.log("Successfully wrote current canvas to file: " + filepath);
     });
 }
 
 function findLastCanvasNumber() {
     let imageNumber = 0;
-    const directoryPath = '/ssrc/images';
-    fs.readdir(directoryPath, (err, files) => {
-        if (err) console.Log("Error reading number of files from images directory" + directoryPath);
+    const directoryPath = '/srcc/images';
+    readdir(directoryPath, (err, files) => {
+        if (err) console.log("Error reading number of files from images directory" + directoryPath);
         else imageNumber = files.length;
     });
     return imageNumber - 1;
@@ -68,23 +78,23 @@ function findLastCanvasNumber() {
 // Loads the next stored canvas from memory if found, otherwise loads the first canvas.
 function switchToNextCanvas() {
     saveCanvasToFile();
-    let filepath = "/ssrc/images/" + ++currentCanvasNum + ".dat";
+    let filepath = "/srcc/images/" + ++currentCanvasNum + ".dat";
     let nextCanvasExists = false;
-    fs.access(filepath, fs.constants.F_OK, (err) => {
+    access(filepath, constants.F_OK, (err) => {
         if (err) nextCanvasExists = true;
     });
     if (!nextCanvasExists) {
         currentCanvasNum = 0;
-        filepath = "/ssrc/images/" + currentCanvasNum + ".dat";
+        filepath = "/srcc/images/" + currentCanvasNum + ".dat";
     }
-    fs.readFile(filePath, (err, data) => {
+    readFile(filepath, (err, data) => {
         if (err) console.error("Error reading next canvas file: " + filepath);
         else currentCanvas = new Uint8Array(data);
     });
     sendMessageToAllClients(currentCanvas.buffer)
-    filepath = "/ssrc/images/currentCanvasNum";
-    fs.writeFile(filepath, currentCanvasNum.toString(), (err) => {
-        if (err) console.Error("Error writing canvas number to file");
+    filepath = "/srcc/images/currentCanvasNum";
+    writeFile(filepath, currentCanvasNum.toString(), (err) => {
+        if (err) console.error("Error writing canvas number to file");
         else console.log("Successfully wrote canvas number to file");
     });
 }
@@ -92,12 +102,12 @@ function switchToNextCanvas() {
 // Creates a new blank canvas file in memory and switches to it.
 function createNewCanvas() {
     let newCanvasNumber = findLastCanvasNumber() + 1;
-    const filepath = filepath = "/ssrc/images/" + newCanvasNumber + ".dat";
-    fs.writeFile(filepath, new Uint8Array(bytesPerImage), (err) => {
+    const filepath = "/srcc/images/" + newCanvasNumber + ".dat";
+    writeFile(filepath, new Uint8Array(bytesPerImage), (err) => {
         if (err) console.error("Error writing new blank canvas to file: " + filepath);
         else console.log("Successfully wrote new blank canvas to file: " + filepath);
     });
-    currentCanvas = imageNumber - 1;
+    currentCanvasNum = newCanvasNumber - 1;
     switchToNextCanvas();
 }
 
@@ -105,15 +115,15 @@ function createNewCanvas() {
 // Replaces the deleted canvas with the very last canvas to maintain continuity.
 function deleteCurrentCanvas() {
     let replacementCanvas = findLastCanvasNumber();
-    let replacementPath = "/ssrc/images/" + replacementCanvas + ".dat";
-    currentCanvasPath = "/ssrc/images/" + currentCanvasNum + ".dat";
-    fs.unlink(currentCanvasPath, (err) => {
+    let replacementPath = "/srcc/images/" + replacementCanvas + ".dat";
+    currentCanvasPath = "/srcc/images/" + currentCanvasNum + ".dat";
+    unlink(currentCanvasPath, (err) => {
         if (err) console.error("Error deleting saved canvas file: " + currentCanvasPath);
         else {
           console.log("Successfully removed saved canvas file: " + currentCanvasPath);
           if (replacementCanvas != currentCanvasNum) {
-            fs.rename(replacementPath, currentCanvasPath, (err) => {
-                if (err) console.error("Error renaming file: " + replacementPath + " to: " + currentCanvasPat);
+            rename(replacementPath, currentCanvasPath, (err) => {
+                if (err) console.error("Error renaming file: " + replacementPath + " to: " + currentCanvasPath);
                 else console.log("Succesfully renamed file: " + replacementPath + " to: " + currentCanvasPath);
             });
             currentCanvasNum--;
@@ -126,15 +136,15 @@ function deleteCurrentCanvas() {
 }
 
 function setup() {
-    let filepath = "/ssrc/images/currentCanvasNum";
-    fs.readFile(filePath, 'utf8', (err, data) => {
+    let filepath = "/srcc/images/currentCanvasNum";
+    readFile(filepath, 'utf8', (err, data) => {
         if (err) console.log("Unable to read saved canvas number or it doesn't exist.");
         else console.log("Successfully loaded saved canvas number");    
         const savedInteger = parseInt(data);
         if (!isNaN(savedInteger)) currentCanvasNum = savedInteger;
     });
-    filepath = "/ssrc/images/" + currentCanvas + ".dat";
-    fs.readFile(filePath, 'utf8', (err, data) => {
+    filepath = "/srcc/images/" + currentCanvasNum + ".dat";
+    readFile(filepath, 'utf8', (err, data) => {
         if (err) {
             console.log("Unable to read saved canvas or it doesn't exist. Defaulting to new canvas...");
             createNewCanvas();

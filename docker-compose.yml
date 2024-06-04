@@ -2,6 +2,7 @@ version: '3.4'
 
 services:
   srcc:
+    container_name: srcc
     image: srcc
     build:
       context: .
@@ -9,4 +10,11 @@ services:
     environment:
       NODE_ENV: production
     ports:
-      - 8080:8080
+      - 3000:80
+    volumes:
+      - /srcc:/srcc
+
+networks:
+  default:
+    name: SRCC
+    driver: bridge

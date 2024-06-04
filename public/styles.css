@@ -1,0 +1,111 @@
+body {
+    background: #18191a;
+    color: #ffffff;
+    font-family: sans-serif;
+}
+
+#canvas {
+    cursor: crosshair;
+    border: 1px solid rgba(255, 255, 255, .5);
+    border-radius: 6px;
+}
+
+#eraserToggleCheckbox {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+#guide {
+    display: grid;
+    pointer-events: none;
+    position: absolute;
+    border: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+#guide div {
+    border: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+select {
+    background-color: #3c3c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+#imageUpload {
+    display:none;
+}
+
+#imageUploadButton, #downloadButton, #newCanvasButton, #nextCanvasButton, #deleteCanvasButton, #clearButton {
+    background-color: #3c3c3c;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 12px;
+    padding: .75rem 1rem;
+}
+
+#imageUploadButton:hover, #downloadButton:hover, #newCanvasButton:hover, #nextCanvasButton:hover, #deleteCanvasButton:hover, #clearButton:hover {
+    background-color: #626262;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    grid-template-rows: auto auto auto auto auto;
+    justify-content: center;
+    gap: 10px;
+}
+
+.grid-item {
+    text-align: center;
+}
+
+.title {
+    margin-top: 1.25rem;
+    margin-bottom: .75rem;
+    grid-column: 1 / 4;
+    grid-row: 1;
+}
+
+.canvas {
+    grid-row: 2;
+    grid-column: 2 / 4;
+}
+
+.canvasControls {
+    margin-left: 4rem;
+    grid-row: 3 / 5;
+    grid-column: 2;
+}
+
+.brushControls {
+    padding-top: .75rem;
+    padding-bottom: .75rem;
+}
+
+.loadControls {
+    margin-top: .75rem;
+    grid-row: 4;
+    grid-column: 3;
+}
+
+.canvasControlButtons {
+    margin-top: .75rem;
+    grid-row: 3;
+    grid-column: 3;
+}
+
+.titleHeader {
+    font-size: 2rem;
+    margin-bottom: .25rem;
+}
+
+.githubLink {
+    color: #ffffff;
+    font-size: 1rem;
+}

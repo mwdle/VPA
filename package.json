@@ -1,5 +1,26 @@
 {
+  "name": "srcc",
+  "version": "1.0.0",
+  "description": "Stateful Realtime Collaborative Canvas",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mwdle/srcc.git"
+  },
+  "keywords": [
+    "canvas"
+  ],
+  "author": "mwdle",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mwdle/srcc/issues"
+  },
+  "homepage": "https://github.com/mwdle/srcc#readme",
   "dependencies": {
+    "express": "^4.19.2",
     "ws": "^8.17.0"
   }
 }
