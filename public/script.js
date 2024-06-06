@@ -4,7 +4,8 @@
 const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
 const port = window.location.protocol === 'https:' ? '' : ':81';
 
-let gateway = `${protocol}://${window.location.hostname}${port}/ws`;
+// let gateway = `${protocol}://${window.location.hostname}${port}/ws`;
+let gateway = 'ws://lb:3000';
 let websocket;
 
 function initWebSocket() {
