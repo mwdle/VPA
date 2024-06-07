@@ -1,11 +1,11 @@
 // Canvas JS ADAPTED FROM https://codepen.io/dcode-software/pen/yLvWNpx
 // If connecting without http (ex via local IP), port 81 is used for websocket connection.
 // Otherwise, the program connects via port 443 which requires a reverse proxy server that will forwards /ws requests to port 81.
-const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-const port = window.location.protocol === 'https:' ? '' : ':81';
+// const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+// const port = window.location.protocol === 'https:' ? '' : ':81';
 
-// let gateway = `${protocol}://${window.location.hostname}${port}/ws`;
-let gateway = 'ws://lb:3000';
+let gateway = `ws://${window.location.hostname}`;
+// let gateway = 'ws://lb:3000';
 let websocket;
 
 function initWebSocket() {
@@ -24,9 +24,9 @@ const eraserToggle = document.getElementById("eraserToggleCheckbox");
 
 canvas.width = 896;
 canvas.height = 448;
-let physicalDisplayWidth = 128;
-let physicalDisplayHeight = 64;
-const canvasMultiplier = 7;
+let physicalDisplayWidth = 512;
+let physicalDisplayHeight = 256;
+const canvasMultiplier = 1.75;
 
 let brushSize = 1;
 let horizontalCellCount = physicalDisplayWidth / brushSize;
@@ -264,8 +264,8 @@ function clearCanvas() {
 // Recalculate and apply updated scale values and pixel grid guidelines.
 function brushChanged(e) {
   brushSize = parseInt(e.target.value);
-  horizontalCellCount = 128 / brushSize;
-  verticalCellCount = 64 / brushSize;
+  horizontalCellCount = physicalDisplayWidth / brushSize;
+  verticalCellCount = physicalDisplayHeight / brushSize;
   cellSideLength = canvas.width / horizontalCellCount;
   setupGridGuides();
 }
