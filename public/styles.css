@@ -19,10 +19,11 @@ body {
     display: grid;
     pointer-events: none;
     position: absolute;
+    border: .99px solid rgba(128, 128, 128, 0.0);
 }
 
 #guide div {
-    border: 0.01px solid rgba(128, 128, 128, 0.3);
+    border: .01px solid rgba(128, 128, 128, 0.3);
 }
 
 select {
@@ -48,10 +49,11 @@ select {
     padding: .75rem 1rem;
 }
 
-#imageUploadButton:hover, #downloadButton:hover, #newCanvasButton:hover, #nextCanvasButton:hover, #deleteCanvasButton:hover, #clearButton:hover {
-    background-color: #626262;
+@media (hover: hover) {
+    #imageUploadButton:hover, #downloadButton:hover, #newCanvasButton:hover, #nextCanvasButton:hover, #deleteCanvasButton:hover, #clearButton:hover {
+        background-color: #626262;
+    }
 }
-
 .grid-container {
     display: grid;
     grid-template-columns: auto auto auto auto;

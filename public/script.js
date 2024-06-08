@@ -1,11 +1,4 @@
-// Canvas JS ADAPTED FROM https://codepen.io/dcode-software/pen/yLvWNpx
-// If connecting without http (ex via local IP), port 81 is used for websocket connection.
-// Otherwise, the program connects via port 443 which requires a reverse proxy server that will forwards /ws requests to port 81.
-// const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-// const port = window.location.protocol === 'https:' ? '' : ':81';
-
-let gateway = `ws://${window.location.hostname}`;
-// let gateway = 'ws://lb:3000';
+let gateway = `wss://${window.location.hostname}`;
 let websocket;
 
 function initWebSocket() {
@@ -24,13 +17,13 @@ const eraserToggle = document.getElementById("eraserToggleCheckbox");
 
 canvas.width = 896;
 canvas.height = 448;
-let physicalDisplayWidth = 512;
-let physicalDisplayHeight = 256;
-const canvasMultiplier = 1.75;
+let virtualDisplayWidth = 448;
+let virtualDisplayHeight = 224;
+const canvasMultiplier = canvas.width / virtualDisplayWidth;
 
-let brushSize = 1;
-let horizontalCellCount = physicalDisplayWidth / brushSize;
-let verticalCellCount = physicalDisplayHeight / brushSize;
+let brushSize = 4;
+let horizontalCellCount = virtualDisplayWidth / brushSize;
+let verticalCellCount = virtualDisplayHeight / brushSize;
 let cellSideLength = canvas.width / horizontalCellCount;
 let lastX = -1;
 let lastY = -1;
@@ -69,8 +62,8 @@ function sendMessageToServer(data) {
 // Converts color image data into monochrome by randomly selecting threshold values from a distribution to produce a dithering effect.
 // Expects an image size of 8192 pixels.
 function dither(imgCtx, binaryRepresentation) {
-  let imageData = imgCtx.getImageData(0, 0, physicalDisplayWidth, physicalDisplayHeight).data;
-  for (let i = 0; i < physicalDisplayHeight*physicalDisplayWidth*4; i += 4) {
+  let imageData = imgCtx.getImageData(0, 0, virtualDisplayWidth, virtualDisplayHeight).data;
+  for (let i = 0; i < virtualDisplayHeight*virtualDisplayWidth*4; i += 4) {
     const lum = ((imageData[i] + imageData[i + 1] + imageData[i + 2]) / 3) / 255;
     let pixelNum = i / 4;
     let byteIndex = Math.floor(pixelNum / 8);
@@ -89,12 +82,12 @@ function uploadImageToServer(e) {
       let ctx = upload.getContext('2d');
 
       // Scale the image to fit the physical display.
-      upload.width = image.width * physicalDisplayWidth / image.width;
-      upload.height = image.height * physicalDisplayHeight / image.height;
-      ctx.drawImage(image, 0, 0, physicalDisplayWidth, physicalDisplayHeight);
+      upload.width = image.width * virtualDisplayWidth / image.width;
+      upload.height = image.height * virtualDisplayHeight / image.height;
+      ctx.drawImage(image, 0, 0, virtualDisplayWidth, virtualDisplayHeight);
 
       // Convert the image to black and white and store it in a binary format to send to the server.
-      let binaryRepresentation = new Uint8Array(physicalDisplayWidth * physicalDisplayHeight / 8);
+      let binaryRepresentation = new Uint8Array(virtualDisplayWidth * virtualDisplayHeight / 8);
       dither(ctx, binaryRepresentation);
       sendMessageToServer(binaryRepresentation.buffer);
   };
@@ -112,7 +105,7 @@ function parsePixelCommand(e) {
     else drawing.fillStyle = "#242526"
     const x = msg.x * canvasMultiplier;
     const y = msg.y * canvasMultiplier;
-    const cellSideLength = canvas.width / (physicalDisplayWidth / msg.size);
+    const cellSideLength = canvas.width / (virtualDisplayWidth / msg.size);
     drawing.fillRect(x, y, cellSideLength, cellSideLength);
   }
 }
@@ -120,14 +113,14 @@ function parsePixelCommand(e) {
 // Extract each bit from the 1024 byte arrayBuffer received from the server and apply it to the canvas.
 function parseCanvasState(e) {
   const pixels = new Uint8Array(e.data);
-  for (let y = 0; y < physicalDisplayHeight; y++) {
-    for (let x = 0; x < physicalDisplayWidth; x++) {
-      let byteIndex = Math.floor((y * physicalDisplayWidth + x) / 8);
-      let bitIndex = 7 - (y * physicalDisplayWidth + x) % 8;
+  for (let y = 0; y < virtualDisplayHeight; y++) {
+    for (let x = 0; x < virtualDisplayWidth; x++) {
+      let byteIndex = Math.floor((y * virtualDisplayWidth + x) / 8);
+      let bitIndex = 7 - (y * virtualDisplayWidth + x) % 8;
       let bit = (pixels[byteIndex] >> bitIndex) & 1;
       if (bit) drawing.fillStyle = "#FFFFFF";
       else drawing.fillStyle = "#242526";
-      drawing.fillRect(x * canvasMultiplier, y * canvasMultiplier, 7, 7);
+      drawing.fillRect(x * canvasMultiplier, y * canvasMultiplier, canvasMultiplier, canvasMultiplier);
     }
   }
 }
@@ -145,13 +138,15 @@ function setupGridGuides() {
   const guideLines = guide.querySelectorAll('div');
   guideLines.forEach(line => line.remove());
 
-  guide.style.width = `${canvas.width}px`;
-  guide.style.height = `${canvas.height}px`;
-  guide.style.gridTemplateColumns = `repeat(${horizontalCellCount}, 1fr)`;
-  guide.style.gridTemplateRows = `repeat(${verticalCellCount}, 1fr)`;
+  if (brushSize >= 4) {
+    guide.style.width = `${canvas.width}px`;
+    guide.style.height = `${canvas.height}px`;
+    guide.style.gridTemplateColumns = `repeat(${horizontalCellCount}, 1fr)`;
+    guide.style.gridTemplateRows = `repeat(${verticalCellCount}, 1fr)`;
 
-  for (let i = 0; i < horizontalCellCount * verticalCellCount; i++) {
-    guide.insertAdjacentHTML("beforeend", "<div></div>")
+    for (let i = 0; i < horizontalCellCount * verticalCellCount; i++) {
+      guide.insertAdjacentHTML("beforeend", "<div></div>")
+    }
   }
 }
 
@@ -264,8 +259,8 @@ function clearCanvas() {
 // Recalculate and apply updated scale values and pixel grid guidelines.
 function brushChanged(e) {
   brushSize = parseInt(e.target.value);
-  horizontalCellCount = physicalDisplayWidth / brushSize;
-  verticalCellCount = physicalDisplayHeight / brushSize;
+  horizontalCellCount = virtualDisplayWidth / brushSize;
+  verticalCellCount = virtualDisplayHeight / brushSize;
   cellSideLength = canvas.width / horizontalCellCount;
   setupGridGuides();
 }

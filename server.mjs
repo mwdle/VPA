@@ -3,9 +3,9 @@ import WebSocket, { WebSocketServer } from "ws";
 import http from "http";
 import express from "express";
 
-const CANVAS_WIDTH = 512;
-const CANVAS_HEIGHT = 256;
-const MAX_BRUSH_SIZE = 32;
+const CANVAS_WIDTH = 448;
+const CANVAS_HEIGHT = 224;
+const MAX_BRUSH_SIZE = 64;
 
 const bytesPerImage = (CANVAS_WIDTH * CANVAS_HEIGHT) / 8;
  
