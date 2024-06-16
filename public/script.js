@@ -21,7 +21,7 @@ let virtualDisplayWidth = 448;
 let virtualDisplayHeight = 224;
 const canvasMultiplier = canvas.width / virtualDisplayWidth;
 
-let brushSize = 4;
+let brushSize = 2;
 let horizontalCellCount = virtualDisplayWidth / brushSize;
 let verticalCellCount = virtualDisplayHeight / brushSize;
 let cellSideLength = canvas.width / horizontalCellCount;

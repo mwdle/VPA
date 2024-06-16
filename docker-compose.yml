@@ -1,18 +1,19 @@
 version: '3.4'
 
 services:
-  srcc:
-    container_name: srcc
-    image: srcc
+  vpa:
+    container_name: vpa
+    image: vpa
     build:
       context: .
       dockerfile: ./Dockerfile
     environment:
       NODE_ENV: production
+      NAME: Virtual
     volumes:
-      - /srcc:/srcc
+      - /vpa:/vpa
 
 networks:
   default:
-    name: SRCC
+    name: vpa
     driver: bridge
