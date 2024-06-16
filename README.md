@@ -1,5 +1,5 @@
-# Stateful Realtime Collaborative Canvas
-Stateful multi-client web-based drawing canvas for Node.js.    <br><br>    
+# Virtual Public Artboard
+Stateful multi-client web-based artboard built on Node.js.    <br><br>    
 <p align="center" float="left">
   <img src="webPage.gif" alt="animated" width="45%"/>
   <img src="display.gif" alt="animated" width="45%"/>
