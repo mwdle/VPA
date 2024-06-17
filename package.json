@@ -1,5 +1,5 @@
 {
-  "name": "srcc",
+  "name": "VPA",
   "version": "1.0.0",
   "description": "Stateful Realtime Collaborative Canvas",
   "main": "server.mjs",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mwdle/srcc.git"
+    "url": "git+https://github.com/mwdle/vpa.git"
   },
   "keywords": [
     "canvas"
@@ -16,11 +16,10 @@
   "author": "mwdle",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/mwdle/srcc/issues"
+    "url": "https://github.com/mwdle/vpa/issues"
   },
-  "homepage": "https://github.com/mwdle/srcc#readme",
+  "homepage": "https://github.com/mwdle/vpa#readme",
   "dependencies": {
-    "ejs": "^3.1.10",
     "express": "^4.19.2",
     "ws": "^8.17.0"
   }

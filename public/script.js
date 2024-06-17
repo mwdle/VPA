@@ -1,4 +1,5 @@
-let gateway = `wss://${window.location.hostname}`;
+const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+let gateway = `${protocol}://${window.location.hostname}`;
 let websocket;
 
 function initWebSocket() {

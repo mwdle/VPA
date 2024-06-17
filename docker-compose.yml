@@ -2,18 +2,18 @@ version: '3.4'
 
 services:
   vpa:
-    container_name: vpa
+    container_name: VirtualPublicArtboard
     image: vpa
     build:
       context: .
       dockerfile: ./Dockerfile
     environment:
       NODE_ENV: production
-      NAME: Virtual
+      APP_TITLE: Virtual Public Artboard
     volumes:
       - /vpa:/vpa
 
 networks:
   default:
-    name: vpa
+    name: VirtualPublicArtboard
     driver: bridge
