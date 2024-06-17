@@ -35,27 +35,5 @@
 				"enableDebugging": true
 			}
 		},
-		{
-            "label": "StartServer",
-            "type": "process",
-            "command": "${input:startServer}"
-        },
-        {
-            "label": "StopServer",
-            "type": "process",
-            "command": "${input:stopServer}"
-        }
-	],
-	"inputs": [
-        {
-            "id": "startServer",
-            "type": "command",
-            "command": "extension.liveServer.goOnline"
-        },
-        {
-            "id": "stopServer",
-            "type": "command",
-            "command": "extension.liveServer.goOffline"
-        }
-    ]
+	]
 }

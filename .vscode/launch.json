@@ -7,14 +7,5 @@
             "preLaunchTask": "docker-run: debug",
             "platform": "node"
         },
-        {
-            "type": "chrome",
-            "request": "launch",
-            "name": "Launch VPA",
-            "url": "http://localhost:5500/public/index.html",
-            "webRoot": "${workspaceFolder}/public",
-            "preLaunchTask": "StartServer",
-            "postDebugTask": "StopServer"
-        },
     ]
 }
