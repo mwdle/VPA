@@ -1,5 +1,6 @@
-# Stateful Realtime Collaborative Canvas
-Stateful multi-client web-based drawing canvas for Node.js.    <br><br>    
+# Virtual Public Artboard
+Stateful multi-client web-based artboard built on Node.js.
+This project is a standalone port of the arduino based [IDC - I2C Display Controller](https://github.com/mwdle/IDC).    <br><br>    
 <p align="center" float="left">
   <img src="webPage.gif" alt="animated" width="45%"/>
   <img src="display.gif" alt="animated" width="45%"/>
