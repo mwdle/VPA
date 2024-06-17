@@ -1,5 +1,5 @@
 {
-  "name": "VPA",
+  "name": "vpa",
   "version": "1.0.0",
   "description": "Stateful Realtime Collaborative Canvas",
   "main": "server.mjs",
