@@ -5,7 +5,7 @@ import express from "express";
 
 const CANVAS_WIDTH = 448;
 const CANVAS_HEIGHT = 224;
-const MAX_BRUSH_SIZE = 64;
+const MAX_BRUSH_SIZE = 32;
 const bytesPerImage = (CANVAS_WIDTH * CANVAS_HEIGHT) / 8;
 let currentCanvas = new Uint8Array(bytesPerImage);
 let currentCanvasNum = 0;
@@ -58,7 +58,7 @@ function handleCommand(message) {
     const cmd = JSON.parse(message);
     if (cmd.clear) currentCanvas.set(new Uint8Array(bytesPerImage));
     else if (cmd.newCanvasRequested) createNewCanvas();
-    else if (cmd.nextCanvasRequested) switchToNextCanvas();
+    else if (cmd.nextCanvasRequested) switchToNextCanvas(true);
     else if (cmd.deleteCanvasRequested) deleteCurrentCanvas();
     else {
         const pixelOn = +(cmd.pixelOn); 
@@ -81,14 +81,16 @@ function handleCommand(message) {
 
 function saveCanvasToFile() {
     let filepath = `/vpa/${appTitleNoSpaces}/${currentCanvasNum}.dat`;
-    writeFileSync(filepath, currentCanvas);
-    console.log(`Saved current canvas to file: ${filepath}`);
+    if (existsSync(filepath)) {
+        writeFileSync(filepath, currentCanvas);
+        console.log(`Saved current canvas to file: ${filepath}`);
+    }
 }
 
 // Loads the next stored canvas from memory if found, otherwise loads the first canvas.
-function switchToNextCanvas() {
+function switchToNextCanvas(saveCurrent) {
     let filepath = `/vpa/${appTitleNoSpaces}/${currentCanvasNum}.dat`;
-    if (existsSync(filepath)) saveCanvasToFile();
+    if (saveCurrent) saveCanvasToFile();
     filepath = `/vpa/${appTitleNoSpaces}/${++currentCanvasNum}.dat`;
     if (!existsSync(filepath)) {
         currentCanvasNum = 0;
@@ -104,7 +106,7 @@ function switchToNextCanvas() {
 // Creates a new blank canvas file in memory and switches to it.
 function createNewCanvas() {
     let filepath = `/vpa/${appTitleNoSpaces}/${currentCanvasNum}.dat`;
-    if (existsSync(filepath)) saveCanvasToFile();
+    saveCanvasToFile();
     let newCanvasNumber = 0;
     filepath = `/vpa/${appTitleNoSpaces}/${newCanvasNumber}.dat`;
     while (existsSync(filepath)) {
@@ -134,16 +136,16 @@ function deleteCurrentCanvas() {
     if (replacementCanvasNum != currentCanvasNum) {
         renameSync(replacementCanvasPath, currentCanvasPath);
         currentCanvasNum--;
-        switchToNextCanvas();
         console.log(`Replaced deleted canvas with: ${replacementCanvasPath}`);
+        switchToNextCanvas(false);
     }
     else if (currentCanvasNum == 0) {
-        createNewCanvas();
         console.log("No canvases remain. Creating a new canvas");
+        createNewCanvas();
     }
     else {
-        switchToNextCanvas();
         console.log("No need to replace deleted canvas. Switching to next canvas");
+        switchToNextCanvas(false);
     }
 }
 
