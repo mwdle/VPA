@@ -21,6 +21,6 @@
   "homepage": "https://github.com/mwdle/vpa#readme",
   "dependencies": {
     "express": "^4.19.2",
-    "ws": "^8.17.0"
+    "ws": "^8.17.1"
   }
 }
