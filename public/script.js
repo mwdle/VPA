@@ -91,6 +91,7 @@ function uploadImageToServer(e) {
       let binaryRepresentation = new Uint8Array(virtualDisplayWidth * virtualDisplayHeight / 8);
       dither(ctx, binaryRepresentation);
       sendMessageToServer(binaryRepresentation.buffer);
+      document.getElementById('imageUpload').value = '';
   };
 }
 
