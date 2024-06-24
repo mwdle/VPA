@@ -38,14 +38,18 @@ drawing.fillRect(0, 0, canvas.width, canvas.height);
 setupGridGuides();
 initWebSocket();
 
-// Distribution of threshold values for color to monochrome image conversions.
+/**
+ * Distribution of threshold values for color to monochrome image conversions.
+ */
 let threshold = [ 0.25, 0.26, 0.27, 0.28, 0.29, 0.3, 0.31, 0.32, 
   0.33, 0.34, 0.35, 0.36, 0.37, 0.38, 0.39, 0.4, 0.41, 0.42,
   0.43, 0.44, 0.45, 0.46, 0.47, 0.48, 0.49, 0.5, 0.51, 0.52, 0.53,
   0.54, 0.55, 0.56, 0.57, 0.58, 0.59, 0.6, 0.61, 0.62, 0.63, 0.64,
   0.65, 0.66, 0.67, 0.68, 0.69 ];
 
-// Reconnect to websocket in case of closed/lost connection.
+/**
+ * Reconnect to websocket in case of closed/lost connection.
+ */
 function onClose(e) {
   console.log('Connection closed');
   setTimeout(initWebSocket, 2000);
@@ -60,8 +64,9 @@ function sendMessageToServer(data) {
   } 
 }
 
-// Converts color image data into monochrome by randomly selecting threshold values from a distribution to produce a dithering effect.
-// Expects an image size of 8192 pixels.
+/**
+ * Converts color image data into monochrome by randomly selecting threshold values from a distribution to produce a dithering effect.
+ */
 function dither(imgCtx, binaryRepresentation) {
   let imageData = imgCtx.getImageData(0, 0, virtualDisplayWidth, virtualDisplayHeight).data;
   for (let i = 0; i < virtualDisplayHeight*virtualDisplayWidth*4; i += 4) {
@@ -74,7 +79,9 @@ function dither(imgCtx, binaryRepresentation) {
   }
 } 
 
-// Scales an image to fit physical display, converts it to black and white, and sends it to the server.
+/**
+ * Scales an image to fit physical display, converts it to black and white, and sends it to the server.
+ */
 function uploadImageToServer(e) {
     let image = new Image();
     image.src = window.URL.createObjectURL(document.getElementById('imageUpload').files[0]);
@@ -95,7 +102,9 @@ function uploadImageToServer(e) {
   };
 }
 
-// Apply pixel changes from the server to the canvas.
+/**
+ * Apply pixel changes from the server to the canvas.
+ */
 function parsePixelCommand(e) {
   const msg = JSON.parse(e.data);
   if (msg.clear) {
@@ -112,7 +121,9 @@ function parsePixelCommand(e) {
   }
 }
 
-// Extract each bit from the 1024 byte arrayBuffer received from the server and apply it to the canvas.
+/**
+ * Extract each bit from the arrayBuffer received from the server and apply it to the canvas.
+ */
 function parseCanvasState(e) {
   const pixels = new Uint8Array(e.data);
   for (let y = 0; y < virtualDisplayHeight; y++) {
@@ -127,15 +138,19 @@ function parseCanvasState(e) {
   }
 }
 
-// Receive websocket messages from the server and handle them accordingly.
+/**
+ * Receive websocket messages from the server and handle them accordingly.
+ */
 function onMessage(e) {
   // If the data is a string, it is a command containing pixel data that was relayed by the server from a client.
   if (typeof e.data === "string") parsePixelCommand(e);
-  // If the data is an arrayBuffer, it is a 1024 byte binary representation of the current state of the canvas on the server.
+  // If the data is an arrayBuffer, it is a binary representation of the current state of the canvas on the server.
   else if (e.data instanceof ArrayBuffer) parseCanvasState(e);
 }
 
-// Sets up grid guides for the canvas based on the currently selected brush size.
+/**
+ * Sets up grid guides for the canvas based on the currently selected brush size.
+ */
 function setupGridGuides() {
   const guideLines = guide.querySelectorAll('div');
   guideLines.forEach(line => line.remove());
@@ -179,7 +194,9 @@ function requestDeleteCanvasFromServer() {
   sendMessageToServer(JSON.stringify(msg));
 }
 
-// Sends a websocket message to the server indicating the pixel change.
+/**
+ * Sends a websocket message to the server indicating the pixel change.
+ */
 function sendPixelChangeToServer(cellx, celly) {
   const msg = {
     clear: false,
@@ -194,7 +211,32 @@ function sendPixelChangeToServer(cellx, celly) {
   sendMessageToServer(JSON.stringify(msg));
 }
 
-// Sets an x,y pixel using the currently selected brush size and eraser settings.
+/**
+ * Bresenham's Line Algorithm Implementation from:
+ * https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+ */
+function computeIntegerPointsOnLine(x0, y0, x1, y1) {
+  let points = [];
+  let dx = Math.abs(x1 - x0);
+  let dy = 0-Math.abs(y1 - y0);
+  let sx = (x0 < x1) ? 1 : -1;
+  let sy = (y0 < y1) ? 1 : -1;
+  let err = dx + dy;
+
+  while (true) {
+      points.push({ x: x0, y: y0 });
+      if ((x0 === x1) && (y0 === y1)) break;
+      let e2 = 2 * err;
+      if (e2 >= dy) { if (x0 == x1) break; err += dy; x0 += sx; }
+      if (e2 < dx) { if (y0 == y1) break; err += dx; y0 += sy; }
+  }
+
+  return points;
+}
+
+/**
+ * Sets an x,y pixel using the currently selected brush size and eraser settings.
+ */
 function fillCell(cellx, celly) {
   sendPixelChangeToServer(cellx, celly);
   if (eraserOn) drawing.fillStyle = "#242526";
@@ -232,7 +274,9 @@ function touchStart(e) {
   touchMoved(e);
 }
 
-// Called by touchMoved and mouseMoved event handlers.
+/**
+ * Called by touchMoved and mouseMoved event handlers.
+ */
 function inputMoved(x, y) {
   if (isDrawing) {
     const cellX = Math.floor(x / cellSideLength) * cellSideLength;
@@ -257,8 +301,9 @@ function clearCanvas() {
   sendMessageToServer(JSON.stringify(msg));
 }
 
-// Handle brush size changes
-// Recalculate and apply updated scale values and pixel grid guidelines.
+/**
+ * Handle brush size changes and recalculate and apply updated scale values and pixel grid guidelines.
+ */
 function brushChanged(e) {
   brushSize = parseInt(e.target.value);
   horizontalCellCount = virtualDisplayWidth / brushSize;
