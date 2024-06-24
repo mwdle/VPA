@@ -277,7 +277,7 @@ function downloadCanvas() {
   let dataURL = canvas.toDataURL("image/png");
   let a = document.createElement('a');
   a.href = dataURL
-  a.download = "idc";
+  a.download = "img";
   a.click();
 }
 
