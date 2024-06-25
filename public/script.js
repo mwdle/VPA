@@ -216,23 +216,30 @@ function sendPixelChangeToServer(cellx, celly) {
  * https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
  */
 function computeIntegerPointsOnLine(x0, y0, x1, y1) {
+  x1 = Math.round(x1); y1 = Math.round(y1); x2 = Math.round(x2); y2 = Math.round(y2);
   let points = [];
   let dx = Math.abs(x1 - x0);
-  let dy = 0-Math.abs(y1 - y0);
-  let sx = (x0 < x1) ? 1 : -1;
-  let sy = (y0 < y1) ? 1 : -1;
+  let dy = -Math.abs(y1 - y0);
+  let sx = Math.sign(x1 - x0);
+  let sy = Math.sign(y1 - y0);
   let err = dx + dy;
 
   while (true) {
-      points.push({ x: x0, y: y0 });
-      if ((x0 === x1) && (y0 === y1)) break;
-      let e2 = 2 * err;
-      if (e2 >= dy) { if (x0 == x1) break; err += dy; x0 += sx; }
-      if (e2 < dx) { if (y0 == y1) break; err += dx; y0 += sy; }
+    points.push({ x: x0, y: y0 });
+    if ((x0 == x1) && (y0 == y1)) break;
+    const e2 = 2 * err;
+    if (e2 >= dy) { if (x0 == x1) break; err += dy; x0 += sx; }
+    if (e2 <= dx) { if (y0 == y1) break; err += dx; y0 += sy; }
   }
 
   return points;
 }
+
+/**
+ * Used to store input position when input is first touched or clicked to allow for interpolation.
+ */
+let x = 0;
+let y = 0;
 
 /**
  * Sets an x,y pixel using the currently selected brush size and eraser settings.
@@ -244,50 +251,88 @@ function fillCell(cellx, celly) {
   drawing.fillRect(cellx, celly, cellSideLength, cellSideLength);
 }
 
-function mouseMoved(e) {
-  const canvasBoundingRect = canvas.getBoundingClientRect();
-  const x = e.clientX - canvasBoundingRect.left;
-  const y = e.clientY - canvasBoundingRect.top;
-  inputMoved(x,y);
-}
-
 function mouseDown(e) {
+  const canvasBoundingRect = canvas.getBoundingClientRect();
+  x = e.clientX - canvasBoundingRect.left;
+  y = e.clientY - canvasBoundingRect.top;
   isDrawing = true; 
   mouseMoved(e);
 }
 
-function mouseUp(e) {
-  isDrawing = false; 
+function mouseMoved(e) {
+  if (isDrawing) {
+    const canvasBoundingRect = canvas.getBoundingClientRect();
+    let newX = e.clientX - canvasBoundingRect.left;
+    let newY = e.clientY - canvasBoundingRect.top;
+    inputMoved(x,y, newX, newY);
+    x = newX;
+    y = newY;
+  }
 }
 
-function touchMoved(e) {
-  const canvasBoundingRect = canvas.getBoundingClientRect();
-  const x = e.touches[0].clientX - canvasBoundingRect.left;
-  const y = e.touches[0].clientY - canvasBoundingRect.top;
-  inputMoved(x,y);
+function mouseUp(e) {
+  if (isDrawing) {
+    const canvasBoundingRect = canvas.getBoundingClientRect();
+    let newX = e.clientX - canvasBoundingRect.left;
+    let newY = e.clientY - canvasBoundingRect.top;
+    inputMoved(x, y, newX, newY);
+    x = newX;
+    y = newY;
+    isDrawing = false;
+  } 
 }
 
 function touchStart(e) {
   // Prevent scrolling during canvas touch events.
   e.preventDefault();
+  if (e.touches.length > 1) return;
+  const canvasBoundingRect = canvas.getBoundingClientRect();
+  x = e.touches[0].clientX - canvasBoundingRect.left;
+  y = e.touches[0].clientY - canvasBoundingRect.top;
   isDrawing = true; 
   touchMoved(e);
 }
 
+function touchMoved(e) {
+  if (e.touches.length > 1) return;
+  if (isDrawing) {
+    const canvasBoundingRect = canvas.getBoundingClientRect();
+    let newX = e.touches[0].clientX - canvasBoundingRect.left;
+    let newY = e.touches[0].clientY - canvasBoundingRect.top;
+    inputMoved(x, y, newX, newY);
+    x = newX;
+    y = newY;
+  }
+}
+
+function touchEnd(e) {
+  if (e.touches.length > 1) return;
+  if (isDrawing) {
+    const canvasBoundingRect = canvas.getBoundingClientRect();
+    let newX = e.touches[0].clientX - canvasBoundingRect.left;
+    let newY = e.touches[0].clientY - canvasBoundingRect.top;
+    inputMoved(x, y, newX, newY);
+    x = newX;
+    y = newY;
+    isDrawing = false;
+  } 
+}  
+
 /**
  * Called by touchMoved and mouseMoved event handlers.
  */
-function inputMoved(x, y) {
-  if (isDrawing) {
-    const cellX = Math.floor(x / cellSideLength) * cellSideLength;
-    const cellY = Math.floor(y / cellSideLength) * cellSideLength;
+function inputMoved(x1, y1, x2, y2) {
+  let points = computeIntegerPointsOnLine(x1, y1, x2, y2);
+  points.forEach(point => {
+    const cellX = Math.floor(point.x / cellSideLength) * cellSideLength;
+    const cellY = Math.floor(point.y / cellSideLength) * cellSideLength;
     if (cellX != lastX || cellY != lastY || eraserStateChanged) {
       eraserStateChanged = false;
       fillCell(cellX, cellY);
       lastX = cellX;
       lastY = cellY;
     }
-  }
+  });
 }
 
 function clearCanvas() {
@@ -327,8 +372,8 @@ function downloadCanvas() {
 }
 
 canvas.addEventListener("touchstart", touchStart, {passive: false});
-canvas.addEventListener("touchend", mouseUp, {passive: false});
-canvas.addEventListener("touchcancel", mouseUp, {passive: false});
+canvas.addEventListener("touchend", touchEnd, {passive: false});
+canvas.addEventListener("touchcancel", touchEnd, {passive: false});
 canvas.addEventListener("touchmove", touchMoved, {passive: false});
 
 canvas.addEventListener("mousemove", mouseMoved);
