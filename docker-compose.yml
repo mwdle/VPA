@@ -3,6 +3,7 @@ version: '3.4'
 services:
   vpa:
     container_name: VirtualPublicArtboard
+    restart: unless-stopped
     image: vpa
     build:
       context: .
