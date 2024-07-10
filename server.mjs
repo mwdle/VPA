@@ -20,6 +20,7 @@ appTitleSplit.forEach(function(titleWord) {
 
 const port = 80;
 const expressServer = express();
+expressServer.enable('trust proxy', '172.16.0.0/12');
 expressServer.use(express.static('public'));
 expressServer.get('/', (req, res) => {
     let template = readFileSync("views/template.html", 'utf8');
