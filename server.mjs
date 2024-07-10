@@ -3,6 +3,10 @@ import WebSocket, { WebSocketServer } from "ws";
 import http from "http";
 import express from "express";
 
+function heartbeat() {
+    this.isAlive = true;
+}
+
 const CANVAS_WIDTH = 448;
 const CANVAS_HEIGHT = 224;
 const MAX_BRUSH_SIZE = 32;
@@ -37,8 +41,12 @@ function sendMessageToAllClients(message) {
     });
 }
 
-wss.on('connection', function connection(ws) {
-    console.log("New client connected!");
+wss.on('connection', function connection(ws, req) {
+    ws.isAlive = true;
+    ws.on('error', console.error);
+    ws.on('pong', heartbeat);
+    const ip = req.headers['x-forwarded-for'].split(',')[0].trim();
+    console.log("New client connected: " + ip);
     ws.send(currentCanvas);
     ws.on('message', function message(message, isBinary) {
         if(isBinary) {
@@ -54,6 +62,18 @@ wss.on('connection', function connection(ws) {
         }
     });
 });
+
+const interval = setInterval(function ping() {
+    wss.clients.forEach(function each(ws) {
+      if (ws.isAlive === false) return ws.terminate();
+      ws.isAlive = false;
+      ws.ping();
+    });
+  }, 30000);
+  
+  wss.on('close', function close() {
+    clearInterval(interval);
+  });
 
 function handleCommand(message) {
     const cmd = JSON.parse(message);
