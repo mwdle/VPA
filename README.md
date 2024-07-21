@@ -4,7 +4,9 @@ This project is a standalone port of the arduino based [IDC - I2C Display Contro
 <p align="center" float="left">
   <img src="webPage.gif" alt="animated" width="45%"/>
   <img src="display.gif" alt="animated" width="45%"/>
-</p>        
+</p>
+
+# THE REST OF THIS README IS COPEID FROM https://github.com/mwdle/IDC AND IS NOT UP TO DATE.
 
 ## Functionality:
 * Websockets server with interactive and stateful pixel canvas that mirrors input all webserver clients in realtime (http://\<espIP\>).
