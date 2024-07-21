@@ -42,12 +42,20 @@ function sendMessageToAllClients(message) {
 }
 
 wss.on('connection', function connection(ws, req) {
+    let ip;
+    if (req.headers['x-forwarded-for']) ip = req.headers['x-forwarded-for'].split(',')[0].trim();
+    else ip = req.socket.remoteAddress;
+    console.log("New client connected: " + ip);
+
+    // Send the current canvas state to any newly connected client
+    ws.send(currentCanvas);
+
+    // Handle ping/pong
     ws.isAlive = true;
     ws.on('error', console.error);
     ws.on('pong', heartbeat);
-    const ip = req.headers['x-forwarded-for'].split(',')[0].trim();
-    console.log("New client connected: " + ip);
-    ws.send(currentCanvas);
+
+    // Handle incoming messages
     ws.on('message', function message(message, isBinary) {
         if(isBinary) {
             if (message.length <= currentCanvas.length) {
