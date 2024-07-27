@@ -1,6 +1,6 @@
 # Virtual Public Artboard
-A stateful multi-client web-based black & white artboard built with Node.js.    <br>    
-This project is a standalone port of the arduino based [IDC - I2C Display Controller](https://github.com/mwdle/IDC).    <br>    
+A stateful multi-client web-based black & white artboard built with Node.js.    <br>
+This project is a standalone port of the arduino based [IDC - I2C Display Controller](https://github.com/mwdle/IDC).    <br>
 <p align="center" float="left">
   <img src="webPage.gif" alt="animated" width="45%"/>
   <img src="display.gif" alt="animated" width="45%"/>
