@@ -1,20 +1,20 @@
-version: '3.4'
-
 services:
-  vpa:
-    container_name: VirtualPublicArtboard
-    restart: unless-stopped
+  VPA:
     image: vpa
+    container_name: VPA
+    restart: unless-stopped
     build:
       context: .
       dockerfile: ./Dockerfile
-    environment:
-      NODE_ENV: production
-      APP_TITLE: Virtual Public Artboard
+    networks:
+      - VPA
     volumes:
-      - /vpa:/vpa
+      - ${DOCKER_VOLUMES}/VPA:/vpa
+    environment:
+      - NODE_ENV=production
+      - APP_TITLE=Virtual Public Artboard
 
 networks:
-  default:
-    name: VirtualPublicArtboard
-    driver: bridge
+  VPA:
+    name: VPA
+    external: true
