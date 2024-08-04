@@ -1,6 +1,6 @@
 services:
   VPA:
-    image: vpa
+    image: mwdle/vpa:latest
     container_name: VPA
     restart: unless-stopped
     build:
@@ -9,7 +9,7 @@ services:
     networks:
       - VPA
     volumes:
-      - ${DOCKER_VOLUMES}/VPA:/vpa
+      - ${DOCKER_VOLUMES}/VPA/VirtualPublicArtboard:/VPA
     environment:
       - NODE_ENV=production
       - APP_TITLE=Virtual Public Artboard

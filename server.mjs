@@ -3,9 +3,7 @@ import WebSocket, { WebSocketServer } from "ws";
 import http from "http";
 import express from "express";
 
-function heartbeat() {
-    this.isAlive = true;
-}
+// Virtual display configuration
 
 const CANVAS_WIDTH = 448;
 const CANVAS_HEIGHT = 224;
@@ -14,17 +12,20 @@ const bytesPerImage = (CANVAS_WIDTH * CANVAS_HEIGHT) / 8;
 let currentCanvas = new Uint8Array(bytesPerImage);
 let currentCanvasNum = 0;
 
+// App title configuration
+
 const appTitle = process.env.APP_TITLE;
-const appTitleNoSpaces = appTitle.replaceAll(" ", "");
 const appTitleSplit = appTitle.split(' ');
 let appTitleAcronym = "";
 appTitleSplit.forEach(function(titleWord) {
     appTitleAcronym += titleWord.charAt(0);
 });
 
+// Webserver configuration
+
 const port = 80;
 const expressServer = express();
-expressServer.enable('trust proxy', '172.16.0.0/12');
+expressServer.enable('trust proxy', '172.16.0.0/16');
 expressServer.use(express.static('public'));
 expressServer.get('/', (req, res) => {
     let template = readFileSync("views/template.html", 'utf8');
@@ -32,6 +33,8 @@ expressServer.get('/', (req, res) => {
     res.send(html);
 });
 const server = http.createServer(expressServer);
+
+// Websocket configuration
 
 const wss = new WebSocketServer({ server: server });
 
@@ -53,7 +56,10 @@ wss.on('connection', function connection(ws, req) {
     // Handle ping/pong
     ws.isAlive = true;
     ws.on('error', console.error);
-    ws.on('pong', heartbeat);
+    ws.on('pong', function pongReceived() {
+        console.log(`Pong received from client: ${ip}`);
+        this.isAlive = true;
+    });
 
     // Handle incoming messages
     ws.on('message', function message(message, isBinary) {
@@ -77,11 +83,11 @@ const interval = setInterval(function ping() {
       ws.isAlive = false;
       ws.ping();
     });
-  }, 30000);
+}, 30000);
   
-  wss.on('close', function close() {
+wss.on('close', function close() {
     clearInterval(interval);
-  });
+});
 
 function handleCommand(message) {
     const cmd = JSON.parse(message);
@@ -108,8 +114,10 @@ function handleCommand(message) {
     }
 }
 
+// Canvas file handling
+
 function saveCanvasToFile() {
-    let filepath = `/vpa/${appTitleNoSpaces}/${currentCanvasNum}.dat`;
+    let filepath = `/VPA/${currentCanvasNum}.dat`;
     if (existsSync(filepath)) {
         writeFileSync(filepath, currentCanvas);
         console.log(`Saved current canvas to file: ${filepath}`);
@@ -118,35 +126,34 @@ function saveCanvasToFile() {
 
 // Loads the next stored canvas from memory if found, otherwise loads the first canvas.
 function switchToNextCanvas(saveCurrent) {
-    let filepath = `/vpa/${appTitleNoSpaces}/${currentCanvasNum}.dat`;
+    let filepath = `/VPA/${currentCanvasNum}.dat`;
     if (saveCurrent) saveCanvasToFile();
-    filepath = `/vpa/${appTitleNoSpaces}/${++currentCanvasNum}.dat`;
+    filepath = `/VPA/${++currentCanvasNum}.dat`;
     if (!existsSync(filepath)) {
         currentCanvasNum = 0;
-        filepath = `/vpa/${appTitleNoSpaces}/${currentCanvasNum}.dat`;
+        filepath = `/VPA/${currentCanvasNum}.dat`;
     }
     currentCanvas.set(readFileSync(filepath));
     sendMessageToAllClients(currentCanvas);
     console.log(`Switched to next canvas: ${filepath}, and relayed to all clients`);
-    filepath = `/vpa/${appTitleNoSpaces}/currentCanvasNum`;
+    filepath = '/VPA/currentCanvasNum';
     writeFileSync(filepath, currentCanvasNum.toString());
 }
 
 // Creates a new blank canvas file in memory and switches to it.
 function createNewCanvas() {
-    let filepath = `/vpa/${appTitleNoSpaces}/${currentCanvasNum}.dat`;
     saveCanvasToFile();
     let newCanvasNumber = 0;
-    filepath = `/vpa/${appTitleNoSpaces}/${newCanvasNumber}.dat`;
+    let filepath = `/VPA/${newCanvasNumber}.dat`;
     while (existsSync(filepath)) {
-        filepath = `/vpa/${appTitleNoSpaces}/${++newCanvasNumber}.dat`;
+        filepath = `/VPA/${++newCanvasNumber}.dat`;
     }
     currentCanvas.set(new Uint8Array(bytesPerImage));
     writeFileSync(filepath, currentCanvas);
     sendMessageToAllClients(currentCanvas);
     console.log(`Created new canvas, stored to file: ${filepath}, and relayed to all clients`);
     currentCanvasNum = newCanvasNumber;
-    filepath = `/vpa/${appTitleNoSpaces}/currentCanvasNum`;
+    filepath = '/VPA/currentCanvasNum';
     writeFileSync(filepath, currentCanvasNum.toString());
 }
 
@@ -154,12 +161,12 @@ function createNewCanvas() {
 // Replaces the deleted canvas with the very last canvas to maintain continuity.
 function deleteCurrentCanvas() {
     let replacementCanvasNum = currentCanvasNum + 1;
-    let replacementCanvasPath = `/vpa/${appTitleNoSpaces}/${replacementCanvasNum}.dat`;
+    let replacementCanvasPath = `/VPA/${replacementCanvasNum}.dat`;
     while (existsSync(replacementCanvasPath)) {
-        replacementCanvasPath = `/vpa/${appTitleNoSpaces}/${++replacementCanvasNum}.dat`;
+        replacementCanvasPath = `/VPA/${++replacementCanvasNum}.dat`;
     }
-    replacementCanvasPath = `/vpa/${appTitleNoSpaces}/${--replacementCanvasNum}.dat`;
-    let currentCanvasPath = `/vpa/${appTitleNoSpaces}/${currentCanvasNum}.dat`;
+    replacementCanvasPath = `/VPA/${--replacementCanvasNum}.dat`;
+    let currentCanvasPath = `/VPA/${currentCanvasNum}.dat`;
     unlinkSync(currentCanvasPath);
     console.log(`Deleted canvas: ${currentCanvasPath}`);
     if (replacementCanvasNum != currentCanvasNum) {
@@ -179,15 +186,15 @@ function deleteCurrentCanvas() {
 }
 
 function setup() {
-    let filepath = `/vpa/${appTitleNoSpaces}`;
+    let filepath = '/VPA';
     if (!existsSync(filepath)) mkdirSync(filepath);
-    filepath = `/vpa/${appTitleNoSpaces}/currentCanvasNum`;
+    filepath = '/VPA/currentCanvasNum';
     if (existsSync(filepath)) {
         const savedInteger = parseInt(readFileSync(filepath, 'utf8'));
         if (!isNaN(savedInteger)) currentCanvasNum = savedInteger;
     }
     else writeFileSync(filepath, currentCanvasNum.toString());
-    filepath = `/vpa/${appTitleNoSpaces}/${currentCanvasNum}.dat`;
+    filepath = `/VPA/${currentCanvasNum}.dat`;
     if (existsSync(filepath)) {
         currentCanvas.set(readFileSync(filepath));
         console.log(`Read ${filepath} and stored in currentCanvas`);

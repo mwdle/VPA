@@ -1,30 +1,3 @@
-const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-let gateway = `${protocol}://${window.location.hostname}`;
-let websocket;
-
-function initWebSocket() {
-  websocket = new WebSocket(gateway);
-  websocket.binaryType = "arraybuffer";
-  websocket.onclose = onClose;
-  websocket.onmessage = onMessage;
-  websocket.onerror = console.error;
-  websocket.onopen = heartbeat;
-  websocket.onclose = clearTimeout(this.pingTimeout);
-  websocket.on('ping', heartbeat);
-}
-
-function heartbeat() {
-  clearTimeout(this.pingTimeout);
-
-  // Use `WebSocket#terminate()`, which immediately destroys the connection,
-  // instead of `WebSocket#close()`, which waits for the close timer.
-  // Delay should be equal to the interval at which your server
-  // sends out pings plus a conservative assumption of the latency.
-  this.pingTimeout = setTimeout(() => {
-    this.terminate();
-  }, 30000 + 1000);
-}
-
 const canvas = document.getElementById("canvas");
 const guide = document.getElementById("guide");
 const clearButton = document.getElementById("clearButton");
@@ -52,7 +25,6 @@ let isDrawing = false;
 drawing.fillStyle = "#242526";
 drawing.fillRect(0, 0, canvas.width, canvas.height);
 setupGridGuides();
-initWebSocket();
 
 /**
  * Distribution of threshold values for color to monochrome image conversions.
@@ -63,21 +35,81 @@ let threshold = [ 0.25, 0.26, 0.27, 0.28, 0.29, 0.3, 0.31, 0.32,
   0.54, 0.55, 0.56, 0.57, 0.58, 0.59, 0.6, 0.61, 0.62, 0.63, 0.64,
   0.65, 0.66, 0.67, 0.68, 0.69 ];
 
+const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+let gateway = `${protocol}://${window.location.hostname}`;
+let websocket;
+let isFirstConnect = true;
+
+function initWebSocket() {
+  websocket = new WebSocket(gateway);
+  websocket.binaryType = "arraybuffer";
+  websocket.onclose = onClose;
+  websocket.onmessage = onMessage;
+  websocket.onopen = onOpen;
+}
+
+window.addEventListener('offline', onClose);
+
+let disconnectedToastVisible = false;
+let disconnectedToast = Toastify({
+  text: "Disconnected! Changes will not save. Reconnecting...",
+  duration: -1,
+  gravity: "top", // `top` or `bottom`
+  position: "left", // `left`, `center` or `right`
+  stopOnFocus: true, // Prevents dismissing of toast on hover
+  style: {
+    background: "linear-gradient(to right, #610a0a, #610a0a)",
+  }
+});
+let connectedToast = Toastify({
+  text: "Reconnected to server!",
+  duration: 3500,
+  gravity: "top", // `top` or `bottom`
+  position: "left", // `left`, `center` or `right`
+  stopOnFocus: true, // Prevents dismissing of toast on hover
+  style: {
+    background: "linear-gradient(to right, #2d6c1a, #2d6c1a)",
+  }
+})
+
 /**
  * Reconnect to websocket in case of closed/lost connection.
  */
-function onClose(e) {
-  console.log('Connection closed');
-  setTimeout(initWebSocket, 2000);
+function onClose() {
+  if (!disconnectedToastVisible) {
+    disconnectedToast.showToast();
+    disconnectedToastVisible = true;
+  }
+  setTimeout(initWebSocket, 2450);
+}
+
+/**
+ * Receive websocket messages from the server and handle them accordingly.
+ */
+function onMessage(e) {
+  // If the data is a string, it is a command containing pixel data that was relayed by the server from a client.
+  if (typeof e.data === "string") parsePixelCommand(e);
+  // If the data is an arrayBuffer, it is a binary representation of the current state of the canvas on the server.
+  else if (e.data instanceof ArrayBuffer) parseCanvasState(e);
+}
+
+function onOpen() {
+  if (isFirstConnect) isFirstConnect = false;
+  else if (disconnectedToastVisible) {
+      disconnectedToastVisible = false;
+      disconnectedToast.hideToast();
+      connectedToast.showToast();
+      setTimeout(function disableToast() {
+        connectedToast.hideToast();
+      }, 3500);
+  }
 }
 
 function sendMessageToServer(data) {
   try {
     websocket.send(data);
   }
-  catch (error) {
-    console.log(error);
-  } 
+  catch (ignored) {} 
 }
 
 /**
@@ -152,16 +184,6 @@ function parseCanvasState(e) {
       drawing.fillRect(x * canvasMultiplier, y * canvasMultiplier, canvasMultiplier, canvasMultiplier);
     }
   }
-}
-
-/**
- * Receive websocket messages from the server and handle them accordingly.
- */
-function onMessage(e) {
-  // If the data is a string, it is a command containing pixel data that was relayed by the server from a client.
-  if (typeof e.data === "string") parsePixelCommand(e);
-  // If the data is an arrayBuffer, it is a binary representation of the current state of the canvas on the server.
-  else if (e.data instanceof ArrayBuffer) parseCanvasState(e);
 }
 
 /**
@@ -421,3 +443,6 @@ canvas.addEventListener("drop", function(e) {
   document.getElementById('imageUpload').files = e.dataTransfer.files;
   uploadImageToServer(e);
 })
+
+// Connect to the server.
+initWebSocket();

@@ -1,12 +1,21 @@
-# Virtual Public Artboard
-A stateful, multi-client, black & white public artboard application built with Node.js.    <br>
-This project is a standalone port of the arduino based [IDC - I2C Display Controller](https://github.com/mwdle/IDC).    <br>
+# Virtual Public Artboard  
+
+A stateful, multi-client, black & white public artboard application built with Node.js.  
+This project is a standalone port of the arduino based [IDC - I2C Display Controller](https://github.com/mwdle/IDC).  
+
 <p align="center" float="left">
   <img src="webPage.gif" alt="animated" width="45%"/>
   <img src="display.gif" alt="animated" width="45%"/>
 </p>
 
-# THE REST OF THIS README IS COPEID FROM https://github.com/mwdle/IDC AND IS NOT UP TO DATE.
+Temporary:
+docker build -t mwdle/vpa:latest .
+docker compose -p vpa up -d
+bind mounts
+trusted proxy range
+
+
+# THE REST OF THIS README IS COPEID FROM https://github.com/mwdle/IDC AND IS NOT UP TO DATE
 
 ## Functionality:
 * Websockets server with interactive and stateful pixel canvas that mirrors input all webserver clients in realtime (http://\<espIP\>).
