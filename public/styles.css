@@ -110,3 +110,7 @@ select {
     color: #ffffff;
     font-size: 1rem;
 }
+
+.toastify {
+    box-shadow: none !important;
+}
