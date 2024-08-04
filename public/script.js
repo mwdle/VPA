@@ -43,44 +43,59 @@ let isFirstConnect = true;
 function initWebSocket() {
   websocket = new WebSocket(gateway);
   websocket.binaryType = "arraybuffer";
-  websocket.onclose = onClose;
+  websocket.onclose = onDisconnect;
   websocket.onmessage = onMessage;
-  websocket.onopen = onOpen;
+  websocket.onopen = onConnect;
 }
 
-window.addEventListener('offline', onClose);
+window.addEventListener('offline', onDisconnect);
 
+/**
+ * Toast notifications for connect/disconnect
+ */
 let disconnectedToastVisible = false;
 let disconnectedToast = Toastify({
   text: "Disconnected! Changes will not save. Reconnecting...",
   duration: -1,
   gravity: "top", // `top` or `bottom`
   position: "left", // `left`, `center` or `right`
-  stopOnFocus: true, // Prevents dismissing of toast on hover
   style: {
-    background: "linear-gradient(to right, #610a0a, #610a0a)",
+    boxShadow: 'none',
+    background: "#610a0a",
+    borderRadius: '5px',
   }
 });
+
 let connectedToast = Toastify({
   text: "Reconnected to server!",
   duration: 3500,
   gravity: "top", // `top` or `bottom`
   position: "left", // `left`, `center` or `right`
-  stopOnFocus: true, // Prevents dismissing of toast on hover
   style: {
-    background: "linear-gradient(to right, #2d6c1a, #2d6c1a)",
+    boxShadow: 'none',
+    background: "#2d6c1a",
+    borderRadius: '5px',
   }
-})
+});
 
 /**
  * Reconnect to websocket in case of closed/lost connection.
  */
-function onClose() {
+function onDisconnect() {
   if (!disconnectedToastVisible) {
     disconnectedToast.showToast();
     disconnectedToastVisible = true;
   }
   setTimeout(initWebSocket, 2450);
+}
+
+function onConnect() {
+  if (isFirstConnect) isFirstConnect = false;
+  else if (disconnectedToastVisible) {
+      disconnectedToastVisible = false;
+      disconnectedToast.hideToast();
+      connectedToast.showToast();
+  }
 }
 
 /**
@@ -91,18 +106,6 @@ function onMessage(e) {
   if (typeof e.data === "string") parsePixelCommand(e);
   // If the data is an arrayBuffer, it is a binary representation of the current state of the canvas on the server.
   else if (e.data instanceof ArrayBuffer) parseCanvasState(e);
-}
-
-function onOpen() {
-  if (isFirstConnect) isFirstConnect = false;
-  else if (disconnectedToastVisible) {
-      disconnectedToastVisible = false;
-      disconnectedToast.hideToast();
-      connectedToast.showToast();
-      setTimeout(function disableToast() {
-        connectedToast.hideToast();
-      }, 3500);
-  }
 }
 
 function sendMessageToServer(data) {
@@ -147,6 +150,17 @@ function uploadImageToServer(e) {
       dither(ctx, binaryRepresentation);
       sendMessageToServer(binaryRepresentation.buffer);
       document.getElementById('imageUpload').value = '';
+      Toastify({
+        text: "Uploaded image to server",
+        duration: 3000,
+        gravity: "top", // `top` or `bottom`
+        position: "left", // `left`, `center` or `right`
+        style: {
+          boxShadow: 'none',
+          background: "#2d6c1a",
+          borderRadius: '5px',
+        }
+      }).showToast();
   };
 }
 
@@ -193,6 +207,7 @@ function setupGridGuides() {
   const guideLines = guide.querySelectorAll('div');
   guideLines.forEach(line => line.remove());
 
+  // No guides for brush sizes smaller than 4 because pixels are too small to properly display grid.
   if (brushSize >= 4) {
     guide.style.width = `${canvas.width}px`;
     guide.style.height = `${canvas.height}px`;
@@ -211,6 +226,17 @@ function requestNewCanvasFromServer() {
     newCanvasRequested: true
   };
   sendMessageToServer(JSON.stringify(msg));
+  if (!disconnectedToastVisible) Toastify({
+    text: "Created new canvas on server",
+    duration: 3000,
+    gravity: "top", // `top` or `bottom`
+    position: "left", // `left`, `center` or `right`
+    style: {
+      boxShadow: 'none',
+      background: "#2d6c1a",
+      borderRadius: '5px',
+    }
+  }).showToast();
 }
 
 function requestNextCanvasFromServer() {
@@ -220,9 +246,22 @@ function requestNextCanvasFromServer() {
     nextCanvasRequested: true
   };
   sendMessageToServer(JSON.stringify(msg));
+  if (!disconnectedToastVisible) Toastify({
+    text: "Fetched next canvas from server",
+    duration: 2000,
+    gravity: "top", // `top` or `bottom`
+    position: "left", // `left`, `center` or `right`
+    style: {
+      boxShadow: 'none',
+      background: "#2d6c1a",
+      borderRadius: '5px',
+    }
+  }).showToast();
 }
 
 function requestDeleteCanvasFromServer() {
+  const yes = confirm("Are you sure you wish to delete the current canvas?");
+  if (!yes) return;
   const msg = {
     clear: false,
     newCanvasRequested: false,
@@ -230,6 +269,17 @@ function requestDeleteCanvasFromServer() {
     deleteCanvasRequested: true
   };
   sendMessageToServer(JSON.stringify(msg));
+  if (!disconnectedToastVisible) Toastify({
+    text: "Deleted canvas from server",
+    duration: 3000,
+    gravity: "top", // `top` or `bottom`
+    position: "left", // `left`, `center` or `right`
+    style: {
+      boxShadow: 'none',
+      background: "#2d6c1a",
+      borderRadius: '5px',
+    }
+  }).showToast();
 }
 
 /**
@@ -266,8 +316,16 @@ function computeIntegerPointsOnLine(x0, y0, x1, y1) {
     points.push({ x: x0, y: y0 });
     if ((x0 == x1) && (y0 == y1)) break;
     const e2 = 2 * err;
-    if (e2 >= dy) { if (x0 == x1) break; err += dy; x0 += sx; }
-    if (e2 <= dx) { if (y0 == y1) break; err += dx; y0 += sy; }
+    if (e2 >= dy) { 
+      if (x0 == x1) break; 
+      err += dy; 
+      x0 += sx;
+    }
+    if (e2 <= dx) { 
+      if (y0 == y1) break; 
+      err += dx; 
+      y0 += sy; 
+    }
   }
 
   return points;
@@ -374,7 +432,7 @@ function inputMoved(x1, y1, x2, y2) {
 }
 
 function clearCanvas() {
-  const yes = confirm("Are you sure you wish to clear the canvas?");
+  const yes = confirm("Are you sure you wish to clear the current canvas?");
   if (!yes) return;
   drawing.fillStyle = "#242526";
   drawing.fillRect(0, 0, canvas.width, canvas.height);
@@ -382,6 +440,17 @@ function clearCanvas() {
     clear: true,
   };
   sendMessageToServer(JSON.stringify(msg));
+  if (!disconnectedToastVisible) Toastify({
+    text: "Cleared canvas on server",
+    duration: 3000,
+    gravity: "top", // `top` or `bottom`
+    position: "left", // `left`, `center` or `right`
+    style: {
+      boxShadow: 'none',
+      background: "#2d6c1a",
+      borderRadius: '5px',
+    }
+  }).showToast();
 }
 
 /**
