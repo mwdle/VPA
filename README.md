@@ -11,7 +11,7 @@ This project is a standalone port of the arduino based [IDC - I2C Display Contro
 Temporary:
 docker build -t mwdle/vpa:latest .
 docker compose -p vpa up -d (Change bind mounts - if using limit on file number, bind mount folders cannot contain any files not created by VPA.)
-bind mounts
+openssl dgst -sha384 -binary script.js | openssl base64 -A
 trusted proxy range
 
 # THE REST OF THIS README IS COPEID FROM https://github.com/mwdle/IDC AND IS NOT UP TO DATE
