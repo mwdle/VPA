@@ -22,11 +22,11 @@ let currentCanvasNum = 0;
  * WARNING: If the FILE_NUM_LIMIT is set to any number greater than 0, any bind mount folders in docker must be empty for the limit to work properly and avoid unexpected behavior.
  */
 const fileLimitString = process.env.FILE_NUM_LIMIT;
-let fileNumLimit = parseInt(fileLimitString);
-if (typeof fileNumLimit === 'undefined') {
+if (typeof fileLimitString === 'undefined') {
     console.error("FILE_NUM_LIMIT environment variable does not exist. Please restart the container with the property set. See README.");
     process.exit(1);
 }
+let fileNumLimit = parseInt(fileLimitString);
 if (isNaN(fileNumLimit)) {
     console.error("FILE_NUM_LIMIT environment variable could not be parsed. Please restart the container with the property correctly set. See README.");
     process.exit(1);
@@ -38,7 +38,7 @@ else fileNumLimit += 1; // Account for the singular file created to track the cu
  */
 
 const appTitle = process.env.APP_TITLE;
-if (!appTitle) {
+if (typeof appTitle === 'undefined') {
     console.error("APP_TITLE environment variable does not exist. Please restart the container with the property set. See README.");
     process.exit(1);
 }
