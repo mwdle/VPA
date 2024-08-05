@@ -4,20 +4,6 @@ import http from "http";
 import express from "express";
 
 /**
- * The FILE_NUM_LIMIT environment variable determines how many image files can be saved on the server.
- * Set FILE_NUM_LIMIT to 0 for no limit on the number of image files that can be created on the server.
- * With a canvas height of 448x224 and 1 bit per pixel, the size of each image file on the server is 12.24 KB, therefore a limit of 1000 images would utilize at most 11.953 MB.
- * The client that requested a new canvas is notified if this limit has been reached.
- */
-const fileLimitString = process.env.FILE_NUM_LIMIT;
-let fileNumLimit = parseInt(fileLimitString);
-if (isNaN(fileNumLimit)) {
-    console.error("FILE_NUM_LIMIT environment variable is not an integer or does not exist. Please restart the container with the property set. See README.");
-    process.exit(1);
-}
-else fileNumLimit += 1; // Account for the singular file created to track the current canvas number across container stops/starts.
-
-/**
  * Virtual Display Configuration
  */
 
@@ -27,6 +13,25 @@ const MAX_BRUSH_SIZE = 32;
 const bytesPerImage = (CANVAS_WIDTH * CANVAS_HEIGHT) / 8;
 let currentCanvas = new Uint8Array(bytesPerImage);
 let currentCanvasNum = 0;
+
+/**
+ * The FILE_NUM_LIMIT environment variable determines how many image files can be saved on the server.
+ * Set FILE_NUM_LIMIT to 0 for no limit on the number of image files that can be created on the server.
+ * With a canvas height of 448x224 and 1 bit per pixel, the size of each image file on the server is 12.24 KB, therefore a limit of 1000 images would utilize at most 11.953 MB.
+ * The client that requested a new canvas is notified if this limit has been reached.
+ * WARNING: If the FILE_NUM_LIMIT is set to any number greater than 0, any bind mount folders in docker must be empty for the limit to work properly and avoid unexpected behavior.
+ */
+const fileLimitString = process.env.FILE_NUM_LIMIT;
+let fileNumLimit = parseInt(fileLimitString);
+if (typeof fileNumLimit === 'undefined') {
+    console.error("FILE_NUM_LIMIT environment variable does not exist. Please restart the container with the property set. See README.");
+    process.exit(1);
+}
+if (isNaN(fileNumLimit)) {
+    console.error("FILE_NUM_LIMIT environment variable could not be parsed. Please restart the container with the property correctly set. See README.");
+    process.exit(1);
+}
+else fileNumLimit += 1; // Account for the singular file created to track the current canvas number across container stops/starts.
 
 /**
  * App Title Configuration
@@ -79,9 +84,10 @@ wss.on('connection', function connection(ws, req) {
     // Send the current canvas state to any newly connected client
     ws.send(currentCanvas);
 
+    ws.on('error', console.error);
+
     // Handle ping/pong
     ws.isAlive = true;
-    ws.on('error', console.error);
     ws.on('pong', function pongReceived() {
         console.log(`Pong received from client: ${ip}`);
         this.isAlive = true;
@@ -98,6 +104,7 @@ wss.on('connection', function connection(ws, req) {
         }
         else {
             handleCommand(message.toString(), ws);
+            // Relay received message to all clients.
             sendMessageToAllClients(message.toString());
         }
     });
@@ -127,6 +134,7 @@ function handleCommand(message, client) {
         const y = cmd.y;
         const size = cmd.size;
 
+        // Set as many pixels as needed for the selected brush size.
         if (x < CANVAS_WIDTH && y < CANVAS_HEIGHT && size <= MAX_BRUSH_SIZE) {
             for (let i = y; i < y + size && i < CANVAS_HEIGHT; i++) {
                 for (let j = x; j < x + size && j < CANVAS_WIDTH; j++) {
