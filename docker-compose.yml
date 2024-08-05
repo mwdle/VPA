@@ -1,26 +1,26 @@
 services:
   VPA:
     image: mwdle/vpa:latest
-    container_name: VPA
+    container_name: <YOUR_CONTAINER_NAME>
     restart: unless-stopped
     build:
       context: .
       dockerfile: ./Dockerfile
     networks:
-      - VPA
+      - <YOUR_CONTAINER_NETWORK>
     volumes:
-      - ${DOCKER_VOLUMES}/VPA/VirtualPublicArtboard:/VPA
+      - </YOUR/VPA/DATA/FOLDER>:/VPA # If using FILE_NUM_LIMIT other than 0 (see below), the host folder you select should not contain any extraneous files. Make sure the permissions are set to allow reading and writing to this directory.
     environment:
       - NODE_ENV=production
-      - APP_TITLE=Virtual Public Artboard
-      - FILE_NUM_LIMIT=50
+      - APP_TITLE=<Your Name> <Public|Private> Artboard # VPA uses the title on the webpage. It also creates an acronym of the provided title for use on the webpage so it is recommended to use at least a two word app title.
+      - FILE_NUM_LIMIT=1000 # A limit of 0 means no limit. A limit of 1000 images means a storage limit of ~11.95 MB (12.24 KB per image using default virtual display resolution 442x224).
     deploy:
       resources:
-        limits: 
+        limits: # These limits should work fine for most configurations, but may need to be increased if you have a large number of clients.
           cpus: '0.15'
           memory: 20M
 
 networks:
-  VPA:
-    name: VPA
+  <YOUR_CONTAINER_NETWORK>: # Assumes you have already created a docker network named <YOUR_CONTAINER_NETWORK>
+    name: <YOUR_CONTAINER_NETWORK>
     external: true
