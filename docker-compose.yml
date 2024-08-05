@@ -13,6 +13,7 @@ services:
     environment:
       - NODE_ENV=production
       - APP_TITLE=Virtual Public Artboard
+      - FILE_NUM_LIMIT=50
 
 networks:
   VPA:

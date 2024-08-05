@@ -55,26 +55,26 @@ window.addEventListener('offline', onDisconnect);
  */
 let disconnectedToastVisible = false;
 let disconnectedToast = Toastify({
-  text: "Disconnected! Changes will not save. Reconnecting...",
+  text: "Disconnected! Reconnecting...",
   duration: -1,
   gravity: "top", // `top` or `bottom`
   position: "left", // `left`, `center` or `right`
   style: {
     boxShadow: 'none',
     background: "#610a0a",
-    borderRadius: '5px',
+    borderRadius: '7px',
   }
 });
 
 let connectedToast = Toastify({
-  text: "Reconnected to server!",
+  text: "Succesfully Reconnected!",
   duration: 3500,
   gravity: "top", // `top` or `bottom`
   position: "left", // `left`, `center` or `right`
   style: {
     boxShadow: 'none',
     background: "#2d6c1a",
-    borderRadius: '5px',
+    borderRadius: '7px',
   }
 });
 
@@ -103,7 +103,7 @@ function onConnect() {
  */
 function onMessage(e) {
   // If the data is a string, it is a command containing pixel data that was relayed by the server from a client.
-  if (typeof e.data === "string") parsePixelCommand(e);
+  if (typeof e.data === "string") parseCommand(e);
   // If the data is an arrayBuffer, it is a binary representation of the current state of the canvas on the server.
   else if (e.data instanceof ArrayBuffer) parseCanvasState(e);
 }
@@ -151,24 +151,53 @@ function uploadImageToServer(e) {
       sendMessageToServer(binaryRepresentation.buffer);
       document.getElementById('imageUpload').value = '';
       Toastify({
-        text: "Uploaded image to server",
+        text: "Uploading image...",
         duration: 3000,
         gravity: "top", // `top` or `bottom`
         position: "left", // `left`, `center` or `right`
         style: {
           boxShadow: 'none',
           background: "#2d6c1a",
-          borderRadius: '5px',
+          borderRadius: '7px',
         }
       }).showToast();
   };
 }
 
 /**
+ * Parse a command from the server.
  * Apply pixel changes from the server to the canvas.
+ * Notify the user if a request to create a new canvas was rejected because the server is full.
+ * Notify the user if a request to switch the canvas occured when only one canvas exists.
  */
-function parsePixelCommand(e) {
+function parseCommand(e) {
   const msg = JSON.parse(e.data);
+  if (msg.fileLimitReached) {
+    Toastify({
+      text: "Server is full! Failed to create a new canvas. Please contact your server administrator to request more storage.",
+      duration: 6500,
+      gravity: "top", // `top` or `bottom`
+      position: "left", // `left`, `center` or `right`
+      style: {
+        boxShadow: 'none',
+        background: "#610a0a",
+        borderRadius: '7px',
+      }
+    }).showToast();
+  }
+  if (msg.noCanvasToSwitchTo) {
+    Toastify({
+      text: "Only one canvas exists!",
+      duration: 3000,
+      gravity: "top", // `top` or `bottom`
+      position: "left", // `left`, `center` or `right`
+      style: {
+        boxShadow: 'none',
+        background: "#610a0a",
+        borderRadius: '7px',
+      }
+    }).showToast();
+  }
   if (msg.clear) {
     drawing.fillStyle = "#242526";
     drawing.fillRect(0, 0, canvas.width, canvas.height);
@@ -227,14 +256,14 @@ function requestNewCanvasFromServer() {
   };
   sendMessageToServer(JSON.stringify(msg));
   if (!disconnectedToastVisible) Toastify({
-    text: "Created new canvas on server",
+    text: "Creating new canvas...",
     duration: 3000,
     gravity: "top", // `top` or `bottom`
     position: "left", // `left`, `center` or `right`
     style: {
       boxShadow: 'none',
       background: "#2d6c1a",
-      borderRadius: '5px',
+      borderRadius: '7px',
     }
   }).showToast();
 }
@@ -247,14 +276,14 @@ function requestNextCanvasFromServer() {
   };
   sendMessageToServer(JSON.stringify(msg));
   if (!disconnectedToastVisible) Toastify({
-    text: "Fetched next canvas from server",
+    text: "Fetching next canvas...",
     duration: 2000,
     gravity: "top", // `top` or `bottom`
     position: "left", // `left`, `center` or `right`
     style: {
       boxShadow: 'none',
       background: "#2d6c1a",
-      borderRadius: '5px',
+      borderRadius: '7px',
     }
   }).showToast();
 }
@@ -270,14 +299,14 @@ function requestDeleteCanvasFromServer() {
   };
   sendMessageToServer(JSON.stringify(msg));
   if (!disconnectedToastVisible) Toastify({
-    text: "Deleted canvas from server",
+    text: "Deleting canvas...",
     duration: 3000,
     gravity: "top", // `top` or `bottom`
     position: "left", // `left`, `center` or `right`
     style: {
       boxShadow: 'none',
       background: "#2d6c1a",
-      borderRadius: '5px',
+      borderRadius: '7px',
     }
   }).showToast();
 }
@@ -441,14 +470,14 @@ function clearCanvas() {
   };
   sendMessageToServer(JSON.stringify(msg));
   if (!disconnectedToastVisible) Toastify({
-    text: "Cleared canvas on server",
+    text: "Cleared canvas!",
     duration: 3000,
     gravity: "top", // `top` or `bottom`
     position: "left", // `left`, `center` or `right`
     style: {
       boxShadow: 'none',
       background: "#2d6c1a",
-      borderRadius: '5px',
+      borderRadius: '7px',
     }
   }).showToast();
 }

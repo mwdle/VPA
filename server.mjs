@@ -1,9 +1,25 @@
-import { writeFileSync, readFileSync, unlinkSync, renameSync, existsSync, mkdirSync } from "fs";
+import { writeFileSync, readFileSync, unlinkSync, renameSync, existsSync, mkdirSync, readdirSync } from "fs";
 import WebSocket, { WebSocketServer } from "ws";
 import http from "http";
 import express from "express";
 
-// Virtual display configuration
+/**
+ * The FILE_NUM_LIMIT environment variable determines how many image files can be saved on the server.
+ * Set FILE_NUM_LIMIT to 0 for no limit on the number of image files that can be created on the server.
+ * With a canvas height of 448x224 and 1 bit per pixel, the size of each image file on the server is 12.24 KB, therefore a limit of 1000 images would utilize at most 11.953 MB.
+ * The client that requested a new canvas is notified if this limit has been reached.
+ */
+const fileLimitString = process.env.FILE_NUM_LIMIT;
+let fileNumLimit = parseInt(fileLimitString);
+if (isNaN(fileNumLimit)) {
+    console.error("FILE_NUM_LIMIT environment variable is not an integer or does not exist. Please restart the container with the property set. See README.");
+    process.exit(1);
+}
+else fileNumLimit += 1; // Account for the singular file created to track the current canvas number across container stops/starts.
+
+/**
+ * Virtual Display Configuration
+ */
 
 const CANVAS_WIDTH = 448;
 const CANVAS_HEIGHT = 224;
@@ -12,16 +28,24 @@ const bytesPerImage = (CANVAS_WIDTH * CANVAS_HEIGHT) / 8;
 let currentCanvas = new Uint8Array(bytesPerImage);
 let currentCanvasNum = 0;
 
-// App title configuration
+/**
+ * App Title Configuration
+ */
 
 const appTitle = process.env.APP_TITLE;
+if (!appTitle) {
+    console.error("APP_TITLE environment variable does not exist. Please restart the container with the property set. See README.");
+    process.exit(1);
+}
 const appTitleSplit = appTitle.split(' ');
 let appTitleAcronym = "";
 appTitleSplit.forEach(function(titleWord) {
     appTitleAcronym += titleWord.charAt(0);
 });
 
-// Webserver configuration
+/**
+ * Server Configuration
+ */
 
 const port = 80;
 const expressServer = express();
@@ -34,7 +58,9 @@ expressServer.get('/', (req, res) => {
 });
 const server = http.createServer(expressServer);
 
-// Websocket configuration
+/**
+ * Websockets Server Configuration
+ */
 
 const wss = new WebSocketServer({ server: server });
 
@@ -71,7 +97,7 @@ wss.on('connection', function connection(ws, req) {
             else console.error("Received client binary that is larger than the expected canvas size. Rejecting.");
         }
         else {
-            handleCommand(message.toString());
+            handleCommand(message.toString(), ws);
             sendMessageToAllClients(message.toString());
         }
     });
@@ -89,11 +115,11 @@ wss.on('close', function close() {
     clearInterval(interval);
 });
 
-function handleCommand(message) {
+function handleCommand(message, client) {
     const cmd = JSON.parse(message);
     if (cmd.clear) currentCanvas.set(new Uint8Array(bytesPerImage));
-    else if (cmd.newCanvasRequested) createNewCanvas();
-    else if (cmd.nextCanvasRequested) switchToNextCanvas(true);
+    else if (cmd.newCanvasRequested) createNewCanvas(client);
+    else if (cmd.nextCanvasRequested) switchToNextCanvas(true, client);
     else if (cmd.deleteCanvasRequested) deleteCurrentCanvas();
     else {
         const pixelOn = +(cmd.pixelOn); 
@@ -114,7 +140,9 @@ function handleCommand(message) {
     }
 }
 
-// Canvas file handling
+/**
+ * Canvas actions configuration
+ */
 
 function saveCanvasToFile() {
     let filepath = `/VPA/${currentCanvasNum}.dat`;
@@ -125,7 +153,13 @@ function saveCanvasToFile() {
 }
 
 // Loads the next stored canvas from memory if found, otherwise loads the first canvas.
-function switchToNextCanvas(saveCurrent) {
+function switchToNextCanvas(saveCurrent, client) {
+    const files = readdirSync("/VPA");
+    const numFiles = files.length;
+    if (numFiles == 2 && client != undefined) { // Account for the singular file created to track the current canvas number across container stops/starts.
+        const msg = { noCanvasToSwitchTo: true };
+        client.send(JSON.stringify(msg));
+    }
     let filepath = `/VPA/${currentCanvasNum}.dat`;
     if (saveCurrent) saveCanvasToFile();
     filepath = `/VPA/${++currentCanvasNum}.dat`;
@@ -141,20 +175,28 @@ function switchToNextCanvas(saveCurrent) {
 }
 
 // Creates a new blank canvas file in memory and switches to it.
-function createNewCanvas() {
-    saveCanvasToFile();
-    let newCanvasNumber = 0;
-    let filepath = `/VPA/${newCanvasNumber}.dat`;
-    while (existsSync(filepath)) {
-        filepath = `/VPA/${++newCanvasNumber}.dat`;
+function createNewCanvas(client) {
+    const files = readdirSync("/VPA");
+    const numFiles = files.length;
+    if (fileNumLimit == 0 || numFiles < fileNumLimit) {
+        saveCanvasToFile();
+        let newCanvasNumber = 0;
+        let filepath = `/VPA/${newCanvasNumber}.dat`;
+        while (existsSync(filepath)) {
+            filepath = `/VPA/${++newCanvasNumber}.dat`;
+        }
+        currentCanvas.set(new Uint8Array(bytesPerImage));
+        writeFileSync(filepath, currentCanvas);
+        sendMessageToAllClients(currentCanvas);
+        console.log(`Created new canvas, stored to file: ${filepath}, and relayed to all clients`);
+        currentCanvasNum = newCanvasNumber;
+        filepath = '/VPA/currentCanvasNum';
+        writeFileSync(filepath, currentCanvasNum.toString());
     }
-    currentCanvas.set(new Uint8Array(bytesPerImage));
-    writeFileSync(filepath, currentCanvas);
-    sendMessageToAllClients(currentCanvas);
-    console.log(`Created new canvas, stored to file: ${filepath}, and relayed to all clients`);
-    currentCanvasNum = newCanvasNumber;
-    filepath = '/VPA/currentCanvasNum';
-    writeFileSync(filepath, currentCanvasNum.toString());
+    else  {
+        const msg = { fileLimitReached: true };
+        client.send(JSON.stringify(msg));
+    }
 }
 
 // Deletes the currently selected canvas from memory and switch to the next available canvas.
@@ -184,6 +226,10 @@ function deleteCurrentCanvas() {
         switchToNextCanvas(false);
     }
 }
+
+/**
+ *  Setup and intial configuration.
+ */
 
 function setup() {
     let filepath = '/VPA';
