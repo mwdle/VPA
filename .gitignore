@@ -131,4 +131,5 @@ dist
 
 # Custom Docker Compose File:
 apa-docker-compose.yml
+alex.pfx
 vpa-docker-compose.yml
