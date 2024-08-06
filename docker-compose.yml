@@ -12,6 +12,7 @@ services:
       - </YOUR/VPA/DATA/FOLDER>:/VPA # If using FILE_NUM_LIMIT other than 0 (see below), the host folder you select should not contain any extraneous files. Make sure the permissions are set to allow reading and writing to this directory.
     environment:
       - NODE_ENV=production
+      - TRUSTED_PROXIES="172.16.0.0/16"
       - APP_TITLE=<Your Name> <Public|Private> Artboard # VPA uses the title on the webpage. It also creates an acronym of the provided title for use on the webpage so it is recommended to use at least a two word app title.
       - FILE_NUM_LIMIT=1000 # A limit of 0 means no limit. A limit of 1000 images means a storage limit of ~11.95 MB (12.24 KB per image using default virtual display resolution 442x224).
     deploy:

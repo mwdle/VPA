@@ -54,7 +54,12 @@ appTitleSplit.forEach(function(titleWord) {
 
 const port = 80;
 const expressServer = express();
-expressServer.enable('trust proxy', '172.16.0.0/16');
+const trustedProxies = process.env.TRUSTED_PROXIES;
+if (typeof trustedProxies === 'undefined') {
+    console.error("trustedProxies environment variable does not exist. Please restart the container with the property set. See README.");
+    process.exit(1);
+}
+expressServer.enable('trust proxy', trustedProxies);
 expressServer.use(express.static('public'));
 expressServer.get('/', (req, res) => {
     let template = readFileSync("views/template.html", 'utf8');
