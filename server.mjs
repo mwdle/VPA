@@ -19,7 +19,7 @@ let currentCanvasNum = 0;
  * Set FILE_NUM_LIMIT to 0 for no limit on the number of image files that can be created on the server.
  * With a canvas height of 448x224 and 1 bit per pixel, the size of each image file on the server is 12.24 KB, therefore a limit of 1000 images would utilize at most 11.953 MB.
  * The client that requested a new canvas is notified if this limit has been reached.
- * WARNING: If the FILE_NUM_LIMIT is set to any number greater than 0, any bind mount folders in docker must be empty for the limit to work properly and avoid unexpected behavior.
+ * WARNING: If the FILE_NUM_LIMIT is set to any number greater than 0, any bind mount folders in docker must only contain VPA created files for the limit to work properly and to avoid unexpected behavior.
  */
 const fileLimitString = process.env.FILE_NUM_LIMIT;
 if (typeof fileLimitString === 'undefined') {
