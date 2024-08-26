@@ -8,16 +8,21 @@ This project is a standalone port of the arduino based [IDC - I2C Display Contro
   <img src="display.gif" alt="animated" width="45%"/>
 </p>
 
-Temporary stuff to add to README:
+## THE REST OF THIS README IS COPIED FROM https://github.com/mwdle/IDC AND IS NOT UP TO DATE
+
+## To get an idea of what this project is, please visit vpa.mwdle.com to demo the app
+
+## This README will get fixed when I have the time. If you have any questions, feel free to reach out to me
+
+Temporary notes to self to add to README until I get a chance to fix and update this readme:
 add notes about docker:
   docker build -t mwdle/vpa:latest .
   docker compose -p vpa up -d (Change bind mounts - if using limit on file number, bind mount folders cannot contain any files not created by VPA.)
 Make note about generating integrity hashes for all scripts and styles loaded from html file: openssl dgst -sha384 -binary script.js | openssl base64 -A
 Make note about trusted proxy range
 
-# THE REST OF THIS README IS COPIED FROM https://github.com/mwdle/IDC AND IS NOT UP TO DATE
+## Functionality
 
-## Functionality:
 * Websockets server with interactive and stateful pixel canvas that mirrors input all webserver clients in realtime (http://\<espIP\>).
   * Users are able draw, erase, change brush size, clear the canvas, upload images to the canvas (via file selector or drag and drop), and download the canvas image.
   * Users are able to create and delete canvases on the server, and rotate between available canvases.
