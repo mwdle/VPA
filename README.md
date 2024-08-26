@@ -8,13 +8,14 @@ This project is a standalone port of the arduino based [IDC - I2C Display Contro
   <img src="display.gif" alt="animated" width="45%"/>
 </p>
 
-Temporary:
-docker build -t mwdle/vpa:latest .
-docker compose -p vpa up -d (Change bind mounts - if using limit on file number, bind mount folders cannot contain any files not created by VPA.)
-openssl dgst -sha384 -binary script.js | openssl base64 -A
-trusted proxy range
+Temporary stuff to add to README:
+add notes about docker:
+  docker build -t mwdle/vpa:latest .
+  docker compose -p vpa up -d (Change bind mounts - if using limit on file number, bind mount folders cannot contain any files not created by VPA.)
+Make note about generating integrity hashes for all scripts and styles loaded from html file: openssl dgst -sha384 -binary script.js | openssl base64 -A
+Make note about trusted proxy range
 
-# THE REST OF THIS README IS COPEID FROM https://github.com/mwdle/IDC AND IS NOT UP TO DATE
+# THE REST OF THIS README IS COPIED FROM https://github.com/mwdle/IDC AND IS NOT UP TO DATE
 
 ## Functionality:
 * Websockets server with interactive and stateful pixel canvas that mirrors input all webserver clients in realtime (http://\<espIP\>).
