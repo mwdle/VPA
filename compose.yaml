@@ -1,0 +1,27 @@
+services:
+  VPA:
+    image: mwdle/vpa:latest
+    container_name: VPA
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    networks:
+      - VPA
+    volumes:
+      - ${DOCKER_VOLUMES}/VPA/VirtualPublicArtboard:/VPA
+    environment:
+      - NODE_ENV=production
+      - TRUSTED_PROXIES="172.16.0.0/16"
+      - APP_TITLE=Virtual Public Artboard
+      - FILE_NUM_LIMIT=50
+    deploy:
+      resources:
+        limits: 
+          cpus: '0.15'
+          memory: 20M
+
+networks:
+  VPA:
+    name: VPA
+    external: true
