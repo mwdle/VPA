@@ -1,3 +1,4 @@
+name: VPA
 services:
   VPA:
     image: mwdle/vpa:latest
@@ -17,8 +18,8 @@ services:
       - FILE_NUM_LIMIT=50
     deploy:
       resources:
-        limits: 
-          cpus: '0.15'
+        limits:
+          cpus: "0.15"
           memory: 20M
 
 networks:
