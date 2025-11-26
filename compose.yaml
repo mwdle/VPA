@@ -19,8 +19,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.15"
-          memory: 20M
+          cpus: "0.3"
+          memory: 60M
 
 networks:
   VPA:
