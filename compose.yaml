@@ -20,7 +20,8 @@ services:
       resources:
         limits:
           cpus: "0.3"
-          memory: 60M
+          memory: 50M
+          pids: 25
 
 networks:
   VPA:
