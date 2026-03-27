@@ -1,4 +1,4 @@
-FROM node:25.8.1-alpine3.22@sha256:d09f26c5f8b25a3286de1a7121a0d7bb3f85ec9191931dd4917b702d74dc70c5
+FROM node:25.8.2-alpine3.22@sha256:5f969e64a872f551a8c8835992c6fe898a2bf40dd814e0fec7c1a098bd2b5859
 ENV NODE_ENV=production
 WORKDIR /usr/src/app
 COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
