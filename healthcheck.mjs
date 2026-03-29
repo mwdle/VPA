@@ -1,7 +1,7 @@
 import http from "node:http";
 
 const options = {
-  hostname: "localhost",
+  hostname: "127.0.0.1",
   port: 3000,
   path: "/health",
   method: "GET",
