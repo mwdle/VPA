@@ -28,7 +28,7 @@ services:
     logging:
       driver: "journald"
     healthcheck:
-      test: ["CMD", "node", "healthcheck.mjs"]
+      test: ["CMD", "/nodejs/bin/node", "/app/healthcheck.mjs"]
       interval: 1m
       timeout: 5s
       retries: 3
