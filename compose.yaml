@@ -19,7 +19,6 @@ services:
     volumes:
       - ${DOCKER_VOLUMES}/VPA/VirtualPublicArtboard:/var/lib/vpa
 
-    user: "${UID}:${GID}"
     read_only: true
     security_opt:
       - no-new-privileges:true
@@ -29,15 +28,7 @@ services:
     logging:
       driver: "journald"
     healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://localhost:3000/health",
-        ]
+      test: ["CMD", "node", "healthcheck.mjs"]
       interval: 1m
       timeout: 5s
       retries: 3
