@@ -10,7 +10,7 @@ services:
     networks:
       - VPA
     volumes:
-      - ${DOCKER_VOLUMES}/VPA/VirtualPublicArtboard:/VPA
+      - ${DOCKER_VOLUMES}/VPA/VirtualPublicArtboard:/var/lib/vpa
     environment:
       - NODE_ENV=production
       - TRUSTED_PROXIES="172.16.0.0/16"
