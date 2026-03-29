@@ -87,7 +87,7 @@ if (typeof trustedProxies === "undefined") {
   );
   process.exit(1);
 }
-expressServer.enable("trust proxy", trustedProxies);
+expressServer.set("trust proxy", trustedProxies);
 expressServer.use(express.static("public"));
 expressServer.get("/health", (req, res) => {
   res.status(200).send("OK");
