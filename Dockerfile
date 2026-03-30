@@ -1,4 +1,4 @@
-FROM node:24.14.1-trixie-slim AS builder
+FROM node:24.14.1-trixie-slim@sha256:c319bb4fac67c01ced508b67193a0397e02d37555d8f9b72958649efd302b7f8 AS builder
 
 WORKDIR /app
 
@@ -7,7 +7,7 @@ RUN npm ci --omit=dev --no-audit --no-fund
 
 RUN mkdir -p -m 700 /var/lib/vpa
 
-FROM gcr.io/distroless/nodejs24-debian13:nonroot
+FROM gcr.io/distroless/nodejs24-debian13:nonroot@sha256:924918584d0e6793e578fc0e98b8b8026ae4ac2ccf2fea283bc54a7165441ccd
 
 WORKDIR /app
 ENV NODE_ENV=production
