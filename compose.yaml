@@ -39,8 +39,6 @@ services:
           cpus: "0.3"
           memory: 100M
           pids: 25
-        reservations:
-          memory: 30M
 
 networks:
   VPA:
