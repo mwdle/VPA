@@ -19,6 +19,7 @@ services:
       - ${DOCKER_VOLUMES}/VPA/VirtualPublicArtboard:/var/lib/vpa
 
     read_only: true
+    user: "${UID}:${GID}"
     security_opt:
       - no-new-privileges:true
     cap_drop:
