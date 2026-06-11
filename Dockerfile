@@ -7,7 +7,7 @@ RUN npm ci --omit=dev --no-audit --no-fund
 
 RUN mkdir -p -m 700 /var/lib/vpa
 
-FROM gcr.io/distroless/nodejs24-debian13:nonroot@sha256:4c11c00f9d72bbe5d42fbcab421229b3c046d949f4e0a8e2d50e88a9b319a9e2
+FROM gcr.io/distroless/nodejs24-debian13:nonroot@sha256:633e1463f02b25e50109325c59cfd373f404169085851b6cd2951bde1aca5623
 
 WORKDIR /app
 ENV NODE_ENV=production
