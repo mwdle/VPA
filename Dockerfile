@@ -1,4 +1,4 @@
-FROM node:24.17.0-trixie-slim@sha256:287c662bed62f3c7b68ea68544814eaff9d7ed2254d2fc9627f2df5957bb7401 AS builder
+FROM node:24.17.0-trixie-slim@sha256:9022946fb57e6fb6a2503931470deba4b49db02bfc8f587f93007fd33ef54415 AS builder
 
 WORKDIR /app
 
