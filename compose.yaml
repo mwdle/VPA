@@ -4,7 +4,6 @@ services:
     image: mwdle/vpa:latest
     container_name: VPA
     restart: unless-stopped
-    init: true
     build:
       context: .
       dockerfile: ./Dockerfile
