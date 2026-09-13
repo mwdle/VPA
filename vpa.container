@@ -1,0 +1,41 @@
+[Container]
+Image=localhost/vpa:latest
+Pull=never
+ContainerName=vpa
+
+Environment=TRUSTED_PROXIES=172.20.11.0/24
+Environment="APP_TITLE=Virtual Public Artboard"
+Environment=FILE_NUM_LIMIT=50
+
+Network=vpa.network
+PublishPort=3000:3000
+
+Volume=%h/containers/vpa/virtual-public-artboard:/var/lib/vpa:U,Z
+
+ReadOnly=true
+ReadOnlyTmpfs=false
+UserNS=auto
+NoNewPrivileges=true
+DropCapability=all
+
+HealthStartupCmd=["/nodejs/bin/node", "/app/healthcheck.mjs"]
+HealthStartupInterval=3s
+HealthStartupRetries=5
+
+HealthCmd=["/nodejs/bin/node", "/app/healthcheck.mjs"]
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthOnFailure=kill
+Notify=healthy
+
+Memory=100M
+PidsLimit=25
+
+[Service]
+CPUQuota=30%
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=default.target
