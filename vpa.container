@@ -33,6 +33,7 @@ Memory=100M
 PidsLimit=25
 
 [Service]
+ExecStartPre=/usr/bin/mkdir -p %h/containers/vpa/virtual-public-artboard
 CPUQuota=30%
 Restart=always
 RestartSec=5s
