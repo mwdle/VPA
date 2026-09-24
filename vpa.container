@@ -18,7 +18,6 @@ UserNS=auto
 NoNewPrivileges=true
 DropCapability=all
 
-HealthStartupCmd=["/nodejs/bin/node", "/app/healthcheck.mjs"]
 HealthStartupInterval=3s
 HealthStartupRetries=5
 
