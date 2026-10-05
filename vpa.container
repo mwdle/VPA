@@ -7,7 +7,7 @@ Network=vpa.network
 # TODO: remove this local test port once a reverse proxy provides access to Jenkins.
 PublishPort=127.0.0.1:3000:3000
 
-Environment=TRUSTED_PROXIES=172.20.11.0/24
+Environment=TRUSTED_PROXIES=10.89.0.0/16
 Environment="APP_TITLE=Virtual Public Artboard"
 Environment=FILE_NUM_LIMIT=50
 
