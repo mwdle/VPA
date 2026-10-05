@@ -21,8 +21,8 @@ COPY views ./views
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=1m --timeout=5s --retries=3 --start-period=30s CMD ["/nodejs/bin/node", "/app/healthcheck.mjs"]
-
 USER nonroot
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s CMD ["/nodejs/bin/node", "/app/healthcheck.mjs"]
 
 CMD ["server.mjs"]

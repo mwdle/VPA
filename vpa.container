@@ -1,30 +1,31 @@
 [Container]
-Image=localhost/vpa:latest
+Image=vpa.build
 Pull=never
 ContainerName=vpa
+
+Network=vpa.network
+# TODO: remove this local test port once a reverse proxy provides access to Jenkins.
+PublishPort=127.0.0.1:3000:3000
 
 Environment=TRUSTED_PROXIES=172.20.11.0/24
 Environment="APP_TITLE=Virtual Public Artboard"
 Environment=FILE_NUM_LIMIT=50
 
-Network=vpa.network
-PublishPort=3000:3000
-
 Volume=%h/containers/vpa/virtual-public-artboard:/var/lib/vpa:U,Z
 
 ReadOnly=true
 ReadOnlyTmpfs=false
+
 UserNS=auto
 NoNewPrivileges=true
 DropCapability=all
 
-HealthStartupInterval=3s
-HealthStartupRetries=5
-
+HealthStartupCmd=["/nodejs/bin/node", "/app/healthcheck.mjs"]
+HealthStartupInterval=5s
+HealthStartupTimeout=5s
 HealthCmd=["/nodejs/bin/node", "/app/healthcheck.mjs"]
 HealthInterval=30s
 HealthTimeout=5s
-HealthRetries=3
 HealthOnFailure=kill
 Notify=healthy
 
@@ -32,10 +33,10 @@ Memory=100M
 PidsLimit=25
 
 [Service]
-ExecStartPre=/usr/bin/mkdir -p %h/containers/vpa/virtual-public-artboard
 CPUQuota=30%
 Restart=always
 RestartSec=5s
+ExecStartPre=/usr/bin/mkdir -p -m 0700 %h/containers/vpa/virtual-public-artboard
 
 [Install]
 WantedBy=default.target
