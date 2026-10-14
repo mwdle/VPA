@@ -4,7 +4,4 @@
 boolean isMainBranch = (env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'master')
 boolean disableIndexTriggers = !isMainBranch
 
-quadletPipeline(
-    disableIndexTriggers: disableIndexTriggers,
-    alertEmail: "${env.ALERT_EMAIL}"
-)
+quadletPipeline(disableIndexTriggers: disableIndexTriggers)
