@@ -1,53 +1,86 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
+  <head>
     <title>TitleAcronym</title>
-    <link rel="stylesheet" type="text/css" href="styles.css" integrity="sha384-QZC4t94dl+esB3tOkbE0xIjJZvHen5cjkbzMKTrsKyhZZ0g8V4uQRZnCgglwvsik">
-    <link rel="stylesheet" type="text/css" href="toastify/toastify.css" integrity="sha384-TO4IUm4upNqQuSHA3xAk5ixibmqyKUAvTD3UIJdx9KctftYoctvBVGeH6nzXTOO2">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="styles.css"
+      integrity="sha384-QZC4t94dl+esB3tOkbE0xIjJZvHen5cjkbzMKTrsKyhZZ0g8V4uQRZnCgglwvsik"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="toastify/toastify.css"
+      integrity="sha384-TO4IUm4upNqQuSHA3xAk5ixibmqyKUAvTD3UIJdx9KctftYoctvBVGeH6nzXTOO2"
+    />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  </head>
+  <body>
     <div class="grid-container">
-        <div class="grid-item title">
-            <div class="titleHeader">TitleAcronym - AppTitle</div>
-            <a class="githubLink" href="https://github.com/mwdle/vpa" target="_blank">https://github.com/mwdle/vpa</a>
+      <div class="grid-item title">
+        <div class="titleHeader">TitleAcronym - AppTitle</div>
+        <a
+          class="githubLink"
+          href="https://github.com/mwdle/vpa"
+          target="_blank"
+          >https://github.com/mwdle/vpa</a
+        >
+      </div>
+      <div class="grid-item canvas">
+        <div id="guide"></div>
+        <canvas id="canvas"></canvas>
+      </div>
+      <div class="grid-item canvasControls">
+        <div class="eraserControls">
+          <label id="toggleEraserLabel" for="eraserToggleCheckbox"
+            >Eraser Toggle:</label
+          >
+          <input type="checkbox" id="eraserToggleCheckbox" />
         </div>
-        <div class="grid-item canvas">
-            <div id="guide"></div>
-            <canvas id="canvas"></canvas>
+        <div class="brushControls">
+          <label for="brush-select">Brush Size:</label>
+          <select id="brush-select">
+            <option value="1">1x</option>
+            <option value="2" selected>2x</option>
+            <option value="4">4x</option>
+            <option value="8">8x</option>
+            <option value="16">16x</option>
+            <option value="32">32x</option>
+          </select>
         </div>
-        <div class="grid-item canvasControls">
-            <div class="eraserControls">
-                <label id="toggleEraserLabel" for="eraserToggleCheckbox">Eraser Toggle:</label>
-                <input type="checkbox" id="eraserToggleCheckbox">
-            </div>
-            <div class="brushControls">
-                <label for="brush-select">Brush Size:</label>
-                <select id="brush-select">
-                    <option value="1">1x</option>
-                    <option value="2" selected>2x</option>
-                    <option value="4">4x</option>
-                    <option value="8">8x</option>
-                    <option value="16">16x</option>
-                    <option value="32">32x</option>
-                </select>
-            </div>
-            <div class="clearControls">
-                <button type="button" id="clearButton">Clear Canvas</button>
-            </div>
+        <div class="clearControls">
+          <button type="button" id="clearButton">Clear Canvas</button>
         </div>
-        <div class="grid-item loadControls">
-            <button for="imageUpload" id="imageUploadButton">Upload an image</button>
-            <input type="file" id="imageUpload" accept="image/*">
-            <button type="button" id="downloadButton">Download image</button>
-        </div>
-        <div class="grid-item canvasControlButtons">
-            <button type="button" id="newCanvasButton">Add new canvas to rotation</button>
-            <button type="button" id="nextCanvasButton">Load next canvas from rotation</button>
-            <button type="button" id="deleteCanvasButton">Delete canvas from rotation</button>
-        </div>
+      </div>
+      <div class="grid-item loadControls">
+        <button for="imageUpload" id="imageUploadButton">
+          Upload an image
+        </button>
+        <input type="file" id="imageUpload" accept="image/*" />
+        <button type="button" id="downloadButton">Download image</button>
+      </div>
+      <div class="grid-item canvasControlButtons">
+        <button type="button" id="newCanvasButton">
+          Add new canvas to rotation
+        </button>
+        <button type="button" id="nextCanvasButton">
+          Load next canvas from rotation
+        </button>
+        <button type="button" id="deleteCanvasButton">
+          Delete canvas from rotation
+        </button>
+      </div>
     </div>
-    <script type="text/javascript" src="toastify/toastify.js" integrity="sha384-VwoO4KYHycI5E2Vzjf4m+IY3C8JKnLhRzzVeR7n4Qdx+Qkq0YUC3aiJ6vY0XVlVT"></script>
-    <script type="text/javascript" src="script.js" integrity="sha384-aAFWGiUFYezqkuoDtHf7tuwT+zMHWIVeDWgN6T/EDHBNVXZPCcGkVwmBsQ/EPIfd"></script>
-</body>
+    <script
+      type="text/javascript"
+      src="toastify/toastify.js"
+      integrity="sha384-VwoO4KYHycI5E2Vzjf4m+IY3C8JKnLhRzzVeR7n4Qdx+Qkq0YUC3aiJ6vY0XVlVT"
+    ></script>
+    <script
+      type="text/javascript"
+      src="script.js"
+      integrity="sha384-H/86w2srjhUIzlIfmgBlpk4SQkzwJosQWautqbCGnIAKphS6SNcc88gsYIGOaLh5"
+    ></script>
+  </body>
 </html>
